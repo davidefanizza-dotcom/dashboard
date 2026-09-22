@@ -339,6 +339,100 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 }
 #city:hover{background:rgba(120,120,128,.1)}
 #city:focus{background:rgba(120,120,128,.14);color:var(--txt)}
+/* ---------- scena meteo (hero) ----------
+   Solo transform/opacity animati su pochi elementi con gradienti: costa poco. */
+.w-hero{
+  position:relative;border-radius:18px;padding:20px 22px;overflow:hidden;isolation:isolate;
+  background:linear-gradient(160deg,var(--sky1),var(--sky2));color:#fff;
+  transition:background .8s var(--ease);
+  --sky1:#3D9BFF;--sky2:#0A5BD8;
+}
+.w-hero .big,.w-hero .cap,.w-hero .w-mm,.w-hero .w-mm b{color:#fff}
+.w-hero .big .unit{color:rgba(255,255,255,.75)}
+.w-hero .cap,.w-hero .w-mm{color:rgba(255,255,255,.85)}
+.w-hero .w-main{position:relative;z-index:1}
+.scene{position:absolute;inset:0;pointer-events:none;z-index:0}
+.scene i{position:absolute;display:block;opacity:0;transition:opacity 1s var(--ease)}
+.w-hero .w-icon{filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))}
+
+/* sole */
+.scene .sun{right:-40px;top:-60px;width:240px;height:240px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,236,150,.95) 0 22%,rgba(255,210,80,.45) 40%,transparent 70%);
+  animation:sunGlow 6s ease-in-out infinite}
+@keyframes sunGlow{50%{transform:scale(1.08)}}
+/* luna e stelle */
+.scene .moon{right:34px;top:18px;width:54px;height:54px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#FFF9E0,#E6E0C8 70%);
+  box-shadow:0 0 40px rgba(255,250,220,.35)}
+.scene .stars{inset:0;background:
+  radial-gradient(1.5px 1.5px at 12% 22%,#fff,transparent 60%),radial-gradient(1px 1px at 28% 60%,#fff,transparent 60%),
+  radial-gradient(1.5px 1.5px at 45% 18%,#fff,transparent 60%),radial-gradient(1px 1px at 62% 48%,#fff,transparent 60%),
+  radial-gradient(1.5px 1.5px at 78% 30%,#fff,transparent 60%),radial-gradient(1px 1px at 88% 68%,#fff,transparent 60%),
+  radial-gradient(1px 1px at 20% 80%,#fff,transparent 60%),radial-gradient(1.5px 1.5px at 55% 78%,#fff,transparent 60%);
+  animation:twinkle 4s ease-in-out infinite}
+.scene .stars.s2{background:
+  radial-gradient(1px 1px at 8% 50%,#fff,transparent 60%),radial-gradient(1.5px 1.5px at 36% 36%,#fff,transparent 60%),
+  radial-gradient(1px 1px at 70% 12%,#fff,transparent 60%),radial-gradient(1px 1px at 92% 44%,#fff,transparent 60%),
+  radial-gradient(1.5px 1.5px at 40% 88%,#fff,transparent 60%);animation-delay:2s}
+@keyframes twinkle{50%{opacity:.35}}
+/* nuvole */
+.scene .cloud{height:70px;width:190px;border-radius:60px;
+  background:radial-gradient(60px 44px at 30% 60%,rgba(255,255,255,.95),transparent 72%),
+             radial-gradient(70px 52px at 55% 40%,rgba(255,255,255,.95),transparent 72%),
+             radial-gradient(60px 40px at 78% 62%,rgba(255,255,255,.9),transparent 72%);
+  will-change:transform}
+.scene .c1{left:-30px;top:10px;animation:cloudDrift 46s linear infinite}
+.scene .c2{left:38%;top:-18px;transform:scale(.8);animation:cloudDrift 62s linear infinite reverse;animation-delay:-20s}
+.scene .c3{left:64%;bottom:-24px;transform:scale(1.15);animation:cloudDrift 54s linear infinite;animation-delay:-35s}
+@keyframes cloudDrift{from{translate:-8% 0}to{translate:8% 0}}
+/* pioggia: gradiente ripetuto, si muove solo la traslazione */
+.scene .rain{left:0;right:0;top:-100%;height:200%;
+  background:repeating-linear-gradient(105deg,transparent 0 14px,rgba(255,255,255,.35) 14px 15.5px,transparent 15.5px 30px);
+  background-size:30px 30px;animation:rainFall .7s linear infinite;will-change:transform}
+@keyframes rainFall{to{transform:translateY(50%)}}
+/* neve */
+.scene .snow{left:0;right:0;top:-100%;height:200%;
+  background:radial-gradient(3px 3px at 10% 10%,#fff,transparent 60%),radial-gradient(2px 2px at 30% 40%,#fff,transparent 60%),
+    radial-gradient(3px 3px at 55% 20%,#fff,transparent 60%),radial-gradient(2px 2px at 75% 55%,#fff,transparent 60%),
+    radial-gradient(3px 3px at 90% 30%,#fff,transparent 60%),radial-gradient(2px 2px at 45% 80%,#fff,transparent 60%);
+  background-size:160px 160px;animation:snowFall 9s linear infinite;will-change:transform}
+.scene .snow.s2{background-size:110px 110px;animation-duration:13s;opacity:0}
+@keyframes snowFall{to{transform:translateY(50%)}}
+/* nebbia */
+.scene .fog{left:-10%;right:-10%;top:30%;height:60%;
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.35) 40%,rgba(255,255,255,.5) 70%,rgba(255,255,255,.3));
+  animation:fogDrift 12s ease-in-out infinite alternate}
+@keyframes fogDrift{to{transform:translateX(4%)}}
+/* fulmine */
+.scene .bolt{inset:0;background:rgba(255,255,255,.85);animation:lightning 7s linear infinite}
+@keyframes lightning{0%,88%,100%{opacity:0}89%{opacity:.7}90%{opacity:0}92%{opacity:.5}93%{opacity:0}}
+
+/* scene: cielo + quali strati accendere */
+[data-scene="clear-day"]{--sky1:#4FB0FF;--sky2:#0B63E0}
+[data-scene="clear-day"] .sun{opacity:1}
+[data-scene="sunset"]{--sky1:#FF9A5B;--sky2:#5B3CBF}
+[data-scene="sunset"] .sun{opacity:.9;top:auto;bottom:-140px;right:20%}
+[data-scene="sunset"] .c3{opacity:.5}
+[data-scene="clear-night"]{--sky1:#1B2A5B;--sky2:#050A1F}
+[data-scene="clear-night"] .moon,[data-scene="clear-night"] .stars{opacity:1}
+[data-scene="cloudy-day"]{--sky1:#7FA9D6;--sky2:#456B9B}
+[data-scene="cloudy-day"] .cloud{opacity:.95}
+[data-scene="cloudy-day"] .sun{opacity:.35}
+[data-scene="cloudy-night"]{--sky1:#2C3A5C;--sky2:#101627}
+[data-scene="cloudy-night"] .cloud{opacity:.35}
+[data-scene="cloudy-night"] .moon{opacity:.8}[data-scene="cloudy-night"] .stars{opacity:.5}
+[data-scene="overcast"]{--sky1:#8A98AD;--sky2:#4E5A6E}
+[data-scene="overcast"] .cloud{opacity:.8}
+[data-scene="rain"]{--sky1:#4A5F7F;--sky2:#1E2A3F}
+[data-scene="rain"] .cloud{opacity:.55}[data-scene="rain"] .rain{opacity:1}
+[data-scene="storm"]{--sky1:#2E3A52;--sky2:#0D1220}
+[data-scene="storm"] .cloud{opacity:.5}[data-scene="storm"] .rain{opacity:.9}[data-scene="storm"] .bolt{opacity:1}
+[data-scene="snow"]{--sky1:#7C93B3;--sky2:#3E5273}
+[data-scene="snow"] .cloud{opacity:.6}[data-scene="snow"] .snow{opacity:.95}[data-scene="snow"] .snow.s2{opacity:.6}
+[data-scene="fog"]{--sky1:#9AA6B8;--sky2:#5F6B7D}
+[data-scene="fog"] .fog{opacity:1}[data-scene="fog"] .cloud{opacity:.3}
+@media(prefers-reduced-motion:reduce){.scene i{animation:none!important}}
+
 .w-main{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .w-icon{width:96px;height:96px;flex:none}
 .w-mm{display:flex;gap:14px;font-size:15px;color:var(--txt2);margin-top:6px;letter-spacing:-.01em;flex-wrap:wrap}
@@ -766,17 +860,30 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 
       <div id="wBody" class="hidden wBody w-layout">
         <div class="w-left">
-          <div class="w-main">
-            <div>
-              <div class="big"><span id="temp">0</span><span class="unit">°</span></div>
-              <div class="cap" id="cond">—</div>
-              <div class="w-mm">
-                <span>Min <b id="tmin">—</b></span>
-                <span>Max <b id="tmax">—</b></span>
-                <span>Percepita <b id="feels">—</b></span>
-              </div>
+          <div class="w-hero" id="wHero" data-scene="clear-day">
+            <div class="scene" aria-hidden="true">
+              <i class="sun"></i>
+              <i class="moon"></i>
+              <i class="stars"></i>
+              <i class="stars s2"></i>
+              <i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i>
+              <i class="rain"></i>
+              <i class="snow"></i><i class="snow s2"></i>
+              <i class="fog"></i>
+              <i class="bolt"></i>
             </div>
-            <div class="w-icon" id="wIcon"></div>
+            <div class="w-main">
+              <div>
+                <div class="big"><span id="temp">0</span><span class="unit">°</span></div>
+                <div class="cap" id="cond">—</div>
+                <div class="w-mm">
+                  <span>Min <b id="tmin">—</b></span>
+                  <span>Max <b id="tmax">—</b></span>
+                  <span>Percepita <b id="feels">—</b></span>
+                </div>
+              </div>
+              <div class="w-icon" id="wIcon"></div>
+            </div>
           </div>
 
           <div class="sec-label" id="hoursLabel">Prossime 24 ore</div>
@@ -1065,6 +1172,18 @@ const uvLabel=u=>u<3?"Basso":u<6?"Moderato":u<8?"Alto":u<11?"Molto alto":"Estrem
 const nf1=v=>(Math.round(v*10)/10).toLocaleString("it-IT");
 
 let lastW=null, hourDay=0;
+/* scena in base a codice WMO, giorno/notte e vicinanza ad alba/tramonto */
+function sceneFor(code,night,nowIso,sr,ss){
+  const mins=iso=>+iso.slice(11,13)*60+ +iso.slice(14,16);
+  const n=mins(nowIso), golden=Math.abs(n-mins(ss))<=50||Math.abs(n-mins(sr))<=35;
+  if([95,96,99].includes(code))return "storm";
+  if([71,73,75,77,85,86].includes(code))return "snow";
+  if([45,48].includes(code))return "fog";
+  if([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code))return "rain";
+  if(code===3)return "overcast";
+  if(code===2||code===1)return night?"cloudy-night":(golden&&code===1?"sunset":"cloudy-day");
+  return night?"clear-night":golden?"sunset":"clear-day";
+}
 /* riga oraria per il giorno k (0 = oggi, dalla ora corrente) */
 function renderHours(k,animate){
   const d=lastW; if(!d)return;
@@ -1134,6 +1253,7 @@ function renderWeather(d){
   $("#feels").textContent=Math.round(cur.apparent_temperature)+"°";
   $("#wIcon").innerHTML=icon(info[1],night);
   countUp($("#temp"),Math.round(cur.temperature_2m),{dur:1100});
+  $("#wHero").dataset.scene=sceneFor(cur.weather_code,night,cur.time,d.daily.sunrise[0],d.daily.sunset[0]);
 
   /* ---- ore: oggi = prossime 24 dalla corrente; altri giorni = 0–23 ---- */
   const nowKey=cur.time.slice(0,13);
