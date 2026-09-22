@@ -352,7 +352,7 @@ html[data-scene][data-tab="weather"] .sky{opacity:1}
 html[data-scene][data-tab="weather"] body::before{opacity:0}
 body::before{transition:opacity 1.2s var(--ease)}
 .sky-defs{position:absolute}
-/* foto reali del cielo: due strati per la dissolvenza, con lento zoom/pan (Ken Burns) */
+/* foto reali del cielo: due strati per la dissolvenza, con lento zoom/pan (Ken Burns (poster)) */
 .sky .photo{inset:-6%;background-size:cover;background-position:center;opacity:0;transition:opacity 1.6s var(--ease);
   will-change:transform;animation:kenburns 70s ease-in-out infinite alternate}
 .sky .photo.on{opacity:1}
@@ -1294,7 +1294,7 @@ const nf1=v=>(Math.round(v*10)/10).toLocaleString("it-IT");
 let lastW=null, hourDay=0;
 /* scena in base a codice WMO, giorno/notte e vicinanza ad alba/tramonto */
 const PHOTOS={"clear-day":1,"sunset":1,"clear-night":1,"cloudy-day":1,"cloudy-night":1,"overcast":1,"rain":1,"storm":1,"snow":1,"fog":1};
-const VIDEOS={"clear-day":1,"sunset":1,"clear-night":1,"cloudy-day":1,"cloudy-night":1,"rain":1,"storm":1,"snow":1};
+const VIDEOS={"clear-day":1,"sunset":1,"clear-night":1,"cloudy-day":1,"cloudy-night":1,"overcast":1,"rain":1,"storm":1,"snow":1,"fog":1};
 /* video solo dove ha senso: niente su risparmio dati o reduced-motion; le foto restano il fallback */
 const VIDEO_OK=!REDUCED&&!(navigator.connection&&navigator.connection.saveData);
 let photoCur="", vidCur="";
