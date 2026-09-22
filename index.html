@@ -341,31 +341,31 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 #city:focus{background:rgba(120,120,128,.14);color:var(--txt)}
 /* ---------- cielo a tutta pagina ---------- */
 .sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;
-  background:linear-gradient(170deg,var(--sky1),var(--sky2));opacity:0;transition:opacity 1.2s var(--ease),background .8s var(--ease)}
-html[data-scene] .sky{opacity:1}
-html[data-scene] body::before{opacity:0}
+  background:linear-gradient(180deg,var(--sky1) 0%,var(--skyM,var(--sky2)) 55%,var(--sky2) 100%);
+  opacity:0;transition:opacity 1.2s var(--ease),background .8s var(--ease)}
+.sky::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 50% at 50% 100%,var(--horizon,transparent),transparent 70%)}
+.sky::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.28))}
+html[data-scene][data-tab="weather"] .sky{opacity:1}
+html[data-scene][data-tab="weather"] body::before{opacity:0}
 body::before{transition:opacity 1.2s var(--ease)}
 .sky .scene{inset:0}
-.sky .sun{right:-8vw;top:-14vh;width:min(60vw,560px);height:min(60vw,560px)}
+.sky .sun{right:-16vw;top:-30vh;width:min(70vw,680px);height:min(70vw,680px)}
 .sky .moon{right:8vw;top:7vh;width:76px;height:76px}
 .sky .cloud{width:38vw;min-width:260px;max-width:560px;height:26%;min-height:120px;max-height:190px;
   background:radial-gradient(38% 60% at 30% 60%,rgba(255,255,255,.9),transparent 72%),
              radial-gradient(44% 72% at 55% 40%,rgba(255,255,255,.9),transparent 72%),
              radial-gradient(38% 56% at 78% 62%,rgba(255,255,255,.85),transparent 72%)}
-.sky .c1{left:-8vw;top:6vh}.sky .c2{left:34vw;top:-4vh}.sky .c3{left:58vw;top:26vh}.sky .c4{left:12vw;top:52vh;animation:cloudDrift 70s linear infinite reverse;animation-delay:-50s}
+.sky .cloud{opacity:0;filter:none}
+.sky .c1{left:-8vw;top:6vh;animation-duration:90s}.sky .c2{left:34vw;top:-4vh;animation-duration:120s}.sky .c3{left:58vw;top:24vh;animation-duration:105s}.sky .c4{left:12vw;top:50vh;animation:cloudDrift 130s linear infinite reverse;animation-delay:-50s}
+@media(max-width:600px){.sky .c3,.sky .c4{display:none}}
 .sky .rain{background-size:40px 40px}
 .sky .snow{background-size:220px 220px}.sky .snow.s2{background-size:150px 150px}
 .sky .fog{top:20%;height:80%}
 [data-scene="sunset"] .sky .sun{top:auto;bottom:-32vh;right:30vw}
 /* testi dell'header sopra il cielo */
-html[data-scene] .hello,html[data-scene] .sub,html[data-scene] #clock{color:#fff;text-shadow:0 1px 12px rgba(0,0,0,.25)}
-html[data-scene] .hello .name{color:#fff;opacity:.85}
-html[data-scene] .sub .dot{background:rgba(255,255,255,.6)}
-/* card un filo più coprenti sul cielo, per la leggibilità */
-html[data-scene] .card{background:var(--card-sky)}
-:root{--card-sky:rgba(255,255,255,.80)}
-:root[data-theme="dark"]{--card-sky:rgba(22,22,26,.78)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--card-sky:rgba(22,22,26,.78)}}
+html[data-scene][data-tab="weather"] .hello,html[data-scene][data-tab="weather"] .sub,html[data-scene][data-tab="weather"] #clock{color:#fff;text-shadow:0 1px 14px rgba(0,0,0,.28)}
+html[data-scene][data-tab="weather"] .sub .dot{background:rgba(255,255,255,.6)}
+html[data-scene][data-tab="weather"] .hello .name{color:#fff;opacity:.8}
 
 /* ---------- scena meteo (hero) ----------
    Solo transform/opacity animati su pochi elementi con gradienti: costa poco. */
@@ -436,28 +436,28 @@ html[data-scene] .card{background:var(--card-sky)}
 @keyframes lightning{0%,88%,100%{opacity:0}89%{opacity:.7}90%{opacity:0}92%{opacity:.5}93%{opacity:0}}
 
 /* scene: cielo + quali strati accendere */
-[data-scene="clear-day"]{--sky1:#4FB0FF;--sky2:#0B63E0}
+[data-scene="clear-day"]{--sky1:#5DC1FF;--skyM:#2A8BF5;--sky2:#0F4FC2;--horizon:rgba(255,255,255,.22)}
 [data-scene="clear-day"] .sun{opacity:1}
-[data-scene="sunset"]{--sky1:#FF9A5B;--sky2:#5B3CBF}
+[data-scene="sunset"]{--sky1:#5C4BB8;--skyM:#E8698C;--sky2:#FFB067;--horizon:rgba(255,220,150,.45)}
 [data-scene="sunset"] .sun{opacity:.9}
 [data-scene="sunset"] .c3{opacity:.5}
-[data-scene="clear-night"]{--sky1:#1B2A5B;--sky2:#050A1F}
+[data-scene="clear-night"]{--sky1:#0D1A3F;--skyM:#101C45;--sky2:#040814;--horizon:rgba(90,120,200,.18)}
 [data-scene="clear-night"] .moon,[data-scene="clear-night"] .stars{opacity:1}
-[data-scene="cloudy-day"]{--sky1:#7FA9D6;--sky2:#456B9B}
+[data-scene="cloudy-day"]{--sky1:#8FB6E0;--skyM:#5E8CC2;--sky2:#3B5F8F;--horizon:rgba(255,255,255,.2)}
 [data-scene="cloudy-day"] .cloud{opacity:.95}
 [data-scene="cloudy-day"] .sun{opacity:.35}
-[data-scene="cloudy-night"]{--sky1:#2C3A5C;--sky2:#101627}
+[data-scene="cloudy-night"]{--sky1:#22304F;--skyM:#182338;--sky2:#0B1020}
 [data-scene="cloudy-night"] .cloud{opacity:.35}
 [data-scene="cloudy-night"] .moon{opacity:.8}[data-scene="cloudy-night"] .stars{opacity:.5}
-[data-scene="overcast"]{--sky1:#8A98AD;--sky2:#4E5A6E}
+[data-scene="overcast"]{--sky1:#A3AFC0;--skyM:#7A889C;--sky2:#4A5567}
 [data-scene="overcast"] .cloud{opacity:.8}
-[data-scene="rain"]{--sky1:#4A5F7F;--sky2:#1E2A3F}
+[data-scene="rain"]{--sky1:#66799A;--skyM:#3E4D68;--sky2:#1C2537}
 [data-scene="rain"] .cloud{opacity:.55}[data-scene="rain"] .rain{opacity:1}
-[data-scene="storm"]{--sky1:#2E3A52;--sky2:#0D1220}
+[data-scene="storm"]{--sky1:#39465F;--skyM:#1F2839;--sky2:#0A0E18}
 [data-scene="storm"] .cloud{opacity:.5}[data-scene="storm"] .rain{opacity:.9}[data-scene="storm"] .bolt{opacity:1}
-[data-scene="snow"]{--sky1:#7C93B3;--sky2:#3E5273}
+[data-scene="snow"]{--sky1:#B8C9E0;--skyM:#7F98BD;--sky2:#4A6187;--horizon:rgba(255,255,255,.3)}
 [data-scene="snow"] .cloud{opacity:.6}[data-scene="snow"] .snow{opacity:.95}[data-scene="snow"] .snow.s2{opacity:.6}
-[data-scene="fog"]{--sky1:#9AA6B8;--sky2:#5F6B7D}
+[data-scene="fog"]{--sky1:#B4BDC9;--skyM:#8A95A6;--sky2:#5A6474}
 [data-scene="fog"] .fog{opacity:1}[data-scene="fog"] .cloud{opacity:.3}
 @media(prefers-reduced-motion:reduce){.scene i{animation:none!important}}
 
@@ -1040,6 +1040,7 @@ if(TABS.includes(location.hash.slice(1)))curTab=location.hash.slice(1);
 function showTab(name,animate){
   const from=TABS.indexOf(curTab), to=TABS.indexOf(name);
   curTab=name;
+  document.documentElement.dataset.tab=name;
   if(window.Assist&&Assist.isOpen())Assist.setContext(name);
   try{localStorage.setItem(TAB_KEY,name)}catch(_){}
   history.replaceState(null,"","#"+name);
