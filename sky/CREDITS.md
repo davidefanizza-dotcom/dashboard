@@ -12,3 +12,16 @@ Immagini da Wikimedia Commons, usate come sfondo per le scene meteo.
 - `storm` — [Port and lighthouse overnight storm with lightning in Port-la-Nouvelle.jpg](https://commons.wikimedia.org/wiki/File:Port_and_lighthouse_overnight_storm_with_lightning_in_Port-la-Nouvelle.jpg) · <a rel="nofollow" class="external text" href="https://www.flickr.com/people/1088 · CC BY 2.0
 - `snow` — [Snow falling at Tower (f6d906ff-4e12-4375-97d6-a21bedf95d8b).jpg](https://commons.wikimedia.org/wiki/File:Snow_falling_at_Tower_(f6d906ff-4e12-4375-97d6-a21bedf95d8b).jpg) · NPS/Diane Renkin · Public domain
 - `fog` — [Hommikune udu Kakerdaja rabas.jpg](https://commons.wikimedia.org/wiki/File:Hommikune_udu_Kakerdaja_rabas.jpg) · Abr · CC BY-SA 3.0
+
+## Video (sky/video)
+
+Clip da Wikimedia Commons, tagliate a 8–16 s e ricodificate a 1280p H.264 senza audio.
+
+- `clear-day` — [Cloud timelapse in New Mexico.webm](https://commons.wikimedia.org/wiki/File%3ACloud_timelapse_in_New_Mexico.webm) · John Fowler · CC BY 2.0
+- `clear-night` — [Stars and Clouds Over Headstone Rock (30230087163).webm](https://commons.wikimedia.org/wiki/File%3AStars_and_Clouds_Over_Headstone_Rock_%2830230087163%29.webm) · Joshua Tree National Park · Public domain
+- `cloudy-day` — [Timelapse CUMULONIMBUS sobre Logroño. Convección 07-05-2018.webm](https://commons.wikimedia.org/wiki/File%3ATimelapse_CUMULONIMBUS_sobre_Logro%C3%B1o._Convecci%C3%B3n_07-05-2018.webm) · Jose Calvo · CC BY 3.0
+- `cloudy-night` — [2011-07-06-timelapse-sky.ogv](https://commons.wikimedia.org/wiki/File%3A2011-07-06-timelapse-sky.ogv) · Thomas Bresson · CC BY 3.0
+- `rain` — [Rain falling on road - gnangarra.webm](https://commons.wikimedia.org/wiki/File%3ARain_falling_on_road_-_gnangarra.webm) · Gnangarra · CC BY 2.5 au
+- `snow` — [Snowing in Harbin 20220305.ogv](https://commons.wikimedia.org/wiki/File%3ASnowing_in_Harbin_20220305.ogv) · SD hehua · CC BY 4.0
+- `storm` — [Lightning Storm in Rolla.webm](https://commons.wikimedia.org/wiki/File%3ALightning_Storm_in_Rolla.webm) · https://www.youtube.com/user/sterwing · CC BY 3.0
+- `sunset` — [Sunset Near Hidden Valley timelapse (40734114682).webm](https://commons.wikimedia.org/wiki/File:Sunset_Near_Hidden_Valley_timelapse_(40734114682).webm) · Joshua Tree National Park (NPS) · Public domain

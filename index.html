@@ -358,6 +358,8 @@ body::before{transition:opacity 1.2s var(--ease)}
 .sky .photo.on{opacity:1}
 #photoB{animation-delay:-35s}
 @keyframes kenburns{from{transform:scale(1) translate(0,0)}to{transform:scale(1.08) translate(-2%,1.5%)}}
+.sky .vid{inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.6s var(--ease)}
+.sky .vid.on{opacity:1}
 .sky .tint{inset:0;opacity:1;background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.05) 35%,rgba(0,0,0,.42))}
 /* con le foto, gli elementi vettoriali restano spenti; il canvas (pioggia, neve, stelle, fulmini) sì */
 .sky.photos .sun,.sky.photos .moon,.sky.photos .clouds,.sky.photos .fog{display:none}
@@ -798,6 +800,7 @@ html[data-scene][data-tab="weather"] .switch[aria-checked="true"]{background:var
 <body>
 <div class="sky" id="sky" aria-hidden="true">
   <div class="photo" id="photoA"></div><div class="photo" id="photoB"></div>
+  <video class="vid" id="vidA" muted loop playsinline preload="none"></video><video class="vid" id="vidB" muted loop playsinline preload="none"></video>
   <div class="tint"></div>
   <svg class="sky-defs" width="0" height="0">
     <defs>
@@ -1288,20 +1291,38 @@ const nf1=v=>(Math.round(v*10)/10).toLocaleString("it-IT");
 let lastW=null, hourDay=0;
 /* scena in base a codice WMO, giorno/notte e vicinanza ad alba/tramonto */
 const PHOTOS={"clear-day":1,"sunset":1,"clear-night":1,"cloudy-day":1,"cloudy-night":1,"overcast":1,"rain":1,"storm":1,"snow":1,"fog":1};
-let photoCur="";
-function setPhoto(scene){
-  if(!PHOTOS[scene]||scene===photoCur)return;
+const VIDEOS={"clear-day":1,"sunset":1,"clear-night":1,"cloudy-day":1,"cloudy-night":1,"rain":1,"storm":1,"snow":1};
+/* video solo dove ha senso: niente su risparmio dati o reduced-motion; le foto restano il fallback */
+const VIDEO_OK=!REDUCED&&!(navigator.connection&&navigator.connection.saveData);
+let photoCur="", vidCur="";
+function showPhoto(scene){
   const sky=$("#sky"), A=$("#photoA"), B=$("#photoB");
+  if(scene===photoCur){return}
   const next=A.classList.contains("on")?B:A, prev=next===A?B:A;
   const img=new Image();
   img.onload=()=>{next.style.backgroundImage=`url(sky/${scene}.jpg)`;next.classList.add("on");prev.classList.remove("on");sky.classList.add("photos");photoCur=scene};
   img.src=`sky/${scene}.jpg`;
 }
-function applyScene(sc){document.documentElement.dataset.scene=sc;setPhoto(sc)}
-function sceneForHour(j){
-  const d=lastW, t=d.hourly.time[j], day=t.slice(0,10), k=d.daily.time.indexOf(day);
-  return sceneFor(d.hourly.weather_code[j],!d.hourly.is_day[j],t,d.daily.sunrise[k<0?0:k],d.daily.sunset[k<0?0:k]);
+function hideVideos(){["#vidA","#vidB"].forEach(id=>{const v=$(id);v.classList.remove("on");v.pause()});vidCur="";$("#sky").classList.remove("video")}
+function showVideo(scene){
+  const A=$("#vidA"), B=$("#vidB");
+  if(scene===vidCur){return}
+  const next=A.classList.contains("on")?B:A, prev=next===A?B:A;
+  next.oncanplay=null; next.onerror=()=>{hideVideos();showPhoto(scene)};
+  next.src=`sky/video/${scene}.mp4`; next.load();
+  next.oncanplay=()=>{next.oncanplay=null;next.play().then(()=>{next.classList.add("on");prev.classList.remove("on");setTimeout(()=>{if(prev!==next&&!prev.classList.contains("on"))prev.pause()},1700);$("#sky").classList.add("video");vidCur=scene}).catch(()=>{hideVideos();showPhoto(scene)})};
 }
+function setPhoto(scene){
+  if(VIDEO_OK&&VIDEOS[scene]){showPhoto(scene);showVideo(scene)}        /* foto sotto come poster, video sopra */
+  else{hideVideos();if(PHOTOS[scene])showPhoto(scene)}
+}
+/* pausa dei video quando non servono (altro tab o pagina nascosta) */
+function syncVideoPlayback(){
+  const on=document.documentElement.dataset.tab==="weather"&&!document.hidden;
+  ["#vidA","#vidB"].forEach(id=>{const v=$(id);if(!v.classList.contains("on"))return;if(on)v.play().catch(()=>{});else v.pause()});
+}
+document.addEventListener("visibilitychange",syncVideoPlayback);
+new MutationObserver(syncVideoPlayback).observe(document.documentElement,{attributes:true,attributeFilter:["data-tab"]});
 function sceneFor(code,night,nowIso,sr,ss){
   const mins=iso=>+iso.slice(11,13)*60+ +iso.slice(14,16);
   const n=mins(nowIso), golden=Math.abs(n-mins(ss))<=50||Math.abs(n-mins(sr))<=35;
@@ -2145,6 +2166,7 @@ const SkyFX=(()=>{
     draw(8,.25);draw(3,.7);draw(1.2,1);
   }
   function wants(){
+    if(document.getElementById("sky").classList.contains("video"))return false;
     return document.documentElement.dataset.tab==="weather"&&!document.hidden&&!REDUCED&&
       ["rain","storm","snow","clear-night","cloudy-night"].includes(mode);
   }
@@ -2157,6 +2179,7 @@ const SkyFX=(()=>{
   addEventListener("resize",resize,{passive:true});
   document.addEventListener("visibilitychange",update);
   new MutationObserver(update).observe(document.documentElement,{attributes:true,attributeFilter:["data-scene","data-tab"]});
+  new MutationObserver(update).observe(document.getElementById("sky"),{attributes:true,attributeFilter:["class"]});
   resize(); update();
   return {update};
 })();
