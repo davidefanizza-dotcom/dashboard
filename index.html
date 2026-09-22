@@ -355,8 +355,27 @@ body::before{transition:opacity 1.2s var(--ease)}
   background:radial-gradient(38% 60% at 30% 60%,rgba(255,255,255,.9),transparent 72%),
              radial-gradient(44% 72% at 55% 40%,rgba(255,255,255,.9),transparent 72%),
              radial-gradient(38% 56% at 78% 62%,rgba(255,255,255,.85),transparent 72%)}
-.sky .cloud{opacity:0;filter:none}
-.sky .c1{left:-8vw;top:6vh;animation-duration:90s}.sky .c2{left:34vw;top:-4vh;animation-duration:120s}.sky .c3{left:58vw;top:24vh;animation-duration:105s}.sky .c4{left:12vw;top:50vh;animation:cloudDrift 130s linear infinite reverse;animation-delay:-50s}
+.sky .cloud{left:0;animation:cloudCross linear infinite;will-change:transform}
+.sky .c1{top:5vh;animation-duration:75s;animation-delay:-10s}
+.sky .c2{top:-3vh;animation-duration:95s;animation-delay:-55s;scale:.8}
+.sky .c3{top:22vh;animation-duration:85s;animation-delay:-30s;scale:1.15}
+.sky .c4{top:48vh;animation-duration:110s;animation-delay:-80s;scale:.9}
+@keyframes cloudCross{from{transform:translateX(-45vw)}to{transform:translateX(105vw)}}
+/* sole: raggi che ruotano lentamente + respiro */
+.sky .sun{background:
+  conic-gradient(from 0deg,rgba(255,255,255,0) 0 8%,rgba(255,255,255,.10) 10%,rgba(255,255,255,0) 12% 25%,rgba(255,255,255,.10) 27%,rgba(255,255,255,0) 29% 42%,rgba(255,255,255,.10) 44%,rgba(255,255,255,0) 46% 58%,rgba(255,255,255,.10) 60%,rgba(255,255,255,0) 62% 75%,rgba(255,255,255,.10) 77%,rgba(255,255,255,0) 79% 92%,rgba(255,255,255,.10) 94%,rgba(255,255,255,0) 96%),
+  radial-gradient(circle,rgba(255,240,170,1) 0 16%,rgba(255,214,90,.55) 30%,rgba(255,200,80,.18) 48%,transparent 66%);
+  animation:sunSpin 90s linear infinite,sunGlow 7s ease-in-out infinite}
+@keyframes sunSpin{to{rotate:360deg}}
+/* bagliore all'orizzonte che respira */
+.sky::before{animation:horizonBreath 9s ease-in-out infinite}
+@keyframes horizonBreath{50%{opacity:.55}}
+/* nuvole leggere anche col sereno, così il cielo vive sempre */
+[data-scene="clear-day"] .sky .c1,[data-scene="clear-day"] .sky .c3{opacity:.45}
+[data-scene="clear-day"] .sky .c2{opacity:.3}
+[data-scene="sunset"] .sky .c1,[data-scene="sunset"] .sky .c2{opacity:.5}
+[data-scene="clear-night"] .sky .c2{opacity:.12}
+[data-scene="cloudy-night"] .sky .cloud{opacity:.28}
 @media(max-width:600px){.sky .c3,.sky .c4{display:none}}
 .sky .rain{background-size:40px 40px}
 .sky .snow{background-size:220px 220px}.sky .snow.s2{background-size:150px 150px}
@@ -366,6 +385,14 @@ body::before{transition:opacity 1.2s var(--ease)}
 html[data-scene][data-tab="weather"] .hello,html[data-scene][data-tab="weather"] .sub,html[data-scene][data-tab="weather"] #clock{color:#fff;text-shadow:0 1px 14px rgba(0,0,0,.28)}
 html[data-scene][data-tab="weather"] .sub .dot{background:rgba(255,255,255,.6)}
 html[data-scene][data-tab="weather"] .hello .name{color:#fff;opacity:.8}
+html[data-scene][data-tab="weather"] .seg{background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.35),0 8px 24px rgba(0,0,0,.18)}
+html[data-scene][data-tab="weather"] .seg button{color:rgba(255,255,255,.82)}
+html[data-scene][data-tab="weather"] .seg button[aria-selected="true"]{color:#111}
+html[data-scene][data-tab="weather"] .seg-ind{background:rgba(255,255,255,.92)}
+html[data-scene][data-tab="weather"] .sync-btn{background:rgba(255,255,255,.22);color:#fff}
+html[data-scene][data-tab="weather"] .sync-btn:hover{background:rgba(255,255,255,.34)}
+html[data-scene][data-tab="weather"] .switch{background:rgba(255,255,255,.28)}
+html[data-scene][data-tab="weather"] .switch[aria-checked="true"]{background:var(--accent)}
 
 /* ---------- scena meteo (hero) ----------
    Solo transform/opacity animati su pochi elementi con gradienti: costa poco. */
