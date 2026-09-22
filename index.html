@@ -26,6 +26,7 @@
   --lg-tint:255,255,255;   --lg-tint-a:.10;
   --lg-inner:255,255,255;  --lg-inner-a:1;  --lg-inner-blur:20px; --lg-inner-spread:-5px;
   --lg-outer-blur:24px;    --lg-outer-a:.14;
+  --sky-ctrl:rgba(20,30,50,.34); --sky-ctrl-hi:rgba(20,30,50,.48); --sky-card:rgba(255,255,255,.88); --sky-txt2:#5B5B60;
   --lg-spec:.55; --lg-hi:.9; --lg-lo:.4; --lg-rim:.6;
   --seg-ind:rgba(255,255,255,.85);
   --blob1:rgba(0,122,255,.30);
@@ -54,6 +55,7 @@
     --lg-tint:30,30,36;    --lg-tint-a:.28;
     --lg-inner:255,255,255; --lg-inner-a:.35; --lg-inner-blur:20px; --lg-inner-spread:-5px;
     --lg-outer-blur:28px;  --lg-outer-a:.45;
+    --sky-ctrl:rgba(255,255,255,.16); --sky-ctrl-hi:rgba(255,255,255,.28); --sky-card:rgba(22,22,26,.78); --sky-txt2:#A0A0A6;
     --lg-spec:.10; --lg-hi:.18; --lg-lo:.05; --lg-rim:.12;
     --seg-ind:rgba(80,80,88,.7);
     --blob1:rgba(0,122,255,.28);
@@ -80,6 +82,7 @@
   --lg-tint:30,30,36;    --lg-tint-a:.28;
   --lg-inner:255,255,255; --lg-inner-a:.35; --lg-inner-blur:20px; --lg-inner-spread:-5px;
   --lg-outer-blur:28px;  --lg-outer-a:.45;
+  --sky-ctrl:rgba(255,255,255,.16); --sky-ctrl-hi:rgba(255,255,255,.28); --sky-card:rgba(22,22,26,.78); --sky-txt2:#A0A0A6;
   --lg-spec:.10; --lg-hi:.18; --lg-lo:.05; --lg-rim:.12;
   --seg-ind:rgba(80,80,88,.7);
   --blob1:rgba(0,122,255,.28);
@@ -416,6 +419,8 @@ body::before{transition:opacity 1.2s var(--ease)}
 [data-scene="clear-day"] .sky .cloud{--o:.75}
 [data-scene="clear-day"] .sky .c3,[data-scene="clear-day"] .sky .c4{--o:0}
 [data-scene="sunset"]{--sky1:#5C4BB8;--skyM:#E8698C;--sky2:#FFB067;--horizon:rgba(255,220,150,.45)}
+[data-scene="sunrise"]{--sky1:#7A8FD6;--skyM:#F2A7B6;--sky2:#FFD08A;--horizon:rgba(255,235,180,.5)}
+[data-scene="sunrise"] .sky .sun,[data-scene="sunrise"] .sky .clouds{opacity:1}
 [data-scene="sunset"] .sky .sun,[data-scene="sunset"] .sky .clouds{opacity:1}
 [data-scene="sunset"] .sky .cloud{--o:.85}
 [data-scene="clear-night"]{--sky1:#0D1A3F;--skyM:#101C45;--sky2:#040814;--horizon:rgba(90,120,200,.18)}
@@ -450,14 +455,16 @@ body::before{transition:opacity 1.2s var(--ease)}
 html[data-scene][data-tab="weather"] .hello,html[data-scene][data-tab="weather"] .sub,html[data-scene][data-tab="weather"] #clock{color:#fff;text-shadow:0 1px 14px rgba(0,0,0,.28)}
 html[data-scene][data-tab="weather"] .sub .dot{background:rgba(255,255,255,.6)}
 html[data-scene][data-tab="weather"] .hello .name{color:#fff;opacity:.8}
-html[data-scene][data-tab="weather"] .seg{background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.35),0 8px 24px rgba(0,0,0,.18)}
-html[data-scene][data-tab="weather"] .seg button{color:rgba(255,255,255,.82)}
+html[data-scene][data-tab="weather"] .seg{background:var(--sky-ctrl);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.28),0 8px 24px rgba(0,0,0,.2)}
+html[data-scene][data-tab="weather"] .seg button{color:rgba(255,255,255,.88)}
 html[data-scene][data-tab="weather"] .seg button[aria-selected="true"]{color:#111}
-html[data-scene][data-tab="weather"] .seg-ind{background:rgba(255,255,255,.92)}
-html[data-scene][data-tab="weather"] .sync-btn{background:rgba(255,255,255,.22);color:#fff}
-html[data-scene][data-tab="weather"] .sync-btn:hover{background:rgba(255,255,255,.34)}
-html[data-scene][data-tab="weather"] .switch{background:rgba(255,255,255,.28)}
+html[data-scene][data-tab="weather"] .seg-ind{background:rgba(255,255,255,.94)}
+html[data-scene][data-tab="weather"] .sync-btn{background:var(--sky-ctrl);color:#fff}
+html[data-scene][data-tab="weather"] .sync-btn:hover{background:var(--sky-ctrl-hi)}
+html[data-scene][data-tab="weather"] .switch{background:var(--sky-ctrl-hi)}
 html[data-scene][data-tab="weather"] .switch[aria-checked="true"]{background:var(--accent)}
+html[data-scene][data-tab="weather"] .card{background:var(--sky-card);--txt2:var(--sky-txt2)}
+html[data-scene][data-tab="weather"] .hello,html[data-scene][data-tab="weather"] .sub,html[data-scene][data-tab="weather"] #clock{text-shadow:0 1px 3px rgba(0,0,0,.35),0 2px 18px rgba(0,0,0,.35)}
 
 /* ---------- scena meteo (hero) ----------
    Solo transform/opacity animati su pochi elementi con gradienti: costa poco. */
@@ -1293,8 +1300,8 @@ const nf1=v=>(Math.round(v*10)/10).toLocaleString("it-IT");
 
 let lastW=null, hourDay=0;
 /* scena in base a codice WMO, giorno/notte e vicinanza ad alba/tramonto */
-const PHOTOS={"clear-day":1,"sunset":1,"clear-night":1,"cloudy-day":1,"cloudy-night":1,"overcast":1,"rain":1,"storm":1,"snow":1,"fog":1};
-const VIDEOS={"clear-day":1,"sunset":1,"clear-night":1,"cloudy-day":1,"cloudy-night":1,"overcast":1,"rain":1,"storm":1,"snow":1,"fog":1};
+const PHOTOS={"clear-day":1,"sunset":1,"sunrise":1,"clear-night":1,"cloudy-day":1,"cloudy-night":1,"overcast":1,"rain":1,"storm":1,"snow":1,"fog":1};
+const VIDEOS={"clear-day":1,"sunset":1,"sunrise":1,"clear-night":1,"cloudy-day":1,"cloudy-night":1,"overcast":1,"rain":1,"storm":1,"snow":1,"fog":1};
 /* video solo dove ha senso: niente su risparmio dati o reduced-motion; le foto restano il fallback */
 const VIDEO_OK=!REDUCED&&!(navigator.connection&&navigator.connection.saveData);
 let photoCur="", vidCur="";
@@ -1363,14 +1370,14 @@ function sceneForHour(j){
 }
 function sceneFor(code,night,nowIso,sr,ss){
   const mins=iso=>+iso.slice(11,13)*60+ +iso.slice(14,16);
-  const n=mins(nowIso), golden=Math.abs(n-mins(ss))<=50||Math.abs(n-mins(sr))<=35;
+  const n=mins(nowIso), dusk=Math.abs(n-mins(ss))<=50, dawn=Math.abs(n-mins(sr))<=40, golden=dusk||dawn, gold=dawn?"sunrise":"sunset";
   if([95,96,99].includes(code))return "storm";
   if([71,73,75,77,85,86].includes(code))return "snow";
   if([45,48].includes(code))return "fog";
   if([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code))return "rain";
   if(code===3)return "overcast";
-  if(code===2||code===1)return night?"cloudy-night":(golden&&code===1?"sunset":"cloudy-day");
-  return night?"clear-night":golden?"sunset":"clear-day";
+  if(code===2||code===1)return night?"cloudy-night":(golden&&code===1?gold:"cloudy-day");
+  return night?"clear-night":golden?gold:"clear-day";
 }
 /* riga oraria per il giorno k (0 = oggi, dalla ora corrente) */
 function renderHours(k,animate){
