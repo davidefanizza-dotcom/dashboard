@@ -1303,14 +1303,29 @@ function showPhoto(scene){
   img.onload=()=>{next.style.backgroundImage=`url(sky/${scene}.jpg)`;next.classList.add("on");prev.classList.remove("on");sky.classList.add("photos");photoCur=scene};
   img.src=`sky/${scene}.jpg`;
 }
-function hideVideos(){["#vidA","#vidB"].forEach(id=>{const v=$(id);v.classList.remove("on");v.pause()});vidCur="";$("#sky").classList.remove("video")}
+function hideVideos(){["#vidA","#vidB"].forEach(id=>{const v=$(id);v.classList.remove("on");v.pause()});vidCur="";vidLoading="";$("#sky").classList.remove("video")}
+let vidLoading="";
 function showVideo(scene){
   const A=$("#vidA"), B=$("#vidB");
-  if(scene===vidCur){return}
+  if(scene===vidCur||scene===vidLoading)return;     /* già mostrato o in caricamento: niente doppio load */
+  vidLoading=scene;
   const next=A.classList.contains("on")?B:A, prev=next===A?B:A;
-  next.oncanplay=null; next.onerror=()=>{hideVideos();showPhoto(scene)};
+  next.oncanplay=null;
+  next.onerror=()=>{if(vidLoading===scene){vidLoading="";hideVideos();showPhoto(scene)}};
   next.src=`sky/video/${scene}.mp4`; next.load();
-  next.oncanplay=()=>{next.oncanplay=null;next.play().then(()=>{next.classList.add("on");prev.classList.remove("on");setTimeout(()=>{if(prev!==next&&!prev.classList.contains("on"))prev.pause()},1700);$("#sky").classList.add("video");vidCur=scene}).catch(()=>{hideVideos();showPhoto(scene)})};
+  next.oncanplay=()=>{
+    next.oncanplay=null;
+    next.play().then(()=>{
+      if(vidLoading!==scene)return;
+      next.classList.add("on"); prev.classList.remove("on");
+      setTimeout(()=>{if(!prev.classList.contains("on"))prev.pause()},1700);
+      $("#sky").classList.add("video"); vidCur=scene; vidLoading="";
+    }).catch(err=>{
+      /* AbortError = play interrotto da un pause/load: non è un errore del video, riprovo */
+      if(err&&err.name==="AbortError"){setTimeout(()=>{if(vidLoading===scene)next.play().then(()=>{next.classList.add("on");prev.classList.remove("on");$("#sky").classList.add("video");vidCur=scene;vidLoading=""}).catch(()=>{})},300);return}
+      vidLoading=""; hideVideos(); showPhoto(scene);
+    });
+  };
 }
 function setPhoto(scene){
   if(VIDEO_OK&&VIDEOS[scene]){showPhoto(scene);showVideo(scene)}        /* foto sotto come poster, video sopra */
@@ -1319,7 +1334,7 @@ function setPhoto(scene){
 /* pausa dei video quando non servono (altro tab o pagina nascosta) */
 function syncVideoPlayback(){
   const on=document.documentElement.dataset.tab==="weather"&&!document.hidden;
-  ["#vidA","#vidB"].forEach(id=>{const v=$(id);if(!v.classList.contains("on"))return;if(on)v.play().catch(()=>{});else v.pause()});
+  ["#vidA","#vidB"].forEach(id=>{const v=$(id);if(!v.classList.contains("on"))return;if(on)v.play().catch(()=>{});else if(!vidLoading)v.pause()});
 }
 document.addEventListener("visibilitychange",syncVideoPlayback);
 new MutationObserver(syncVideoPlayback).observe(document.documentElement,{attributes:true,attributeFilter:["data-tab"]});
