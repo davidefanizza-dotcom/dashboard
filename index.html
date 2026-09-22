@@ -448,7 +448,9 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 .sunpath circle{fill:#FFB300}
 
 /* ---------- assistente meteo ---------- */
-.ai-wrap{position:fixed;right:clamp(16px,3vw,32px);bottom:calc(clamp(16px,3vw,32px) + env(safe-area-inset-bottom,0px));z-index:50;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+.ai-wrap{position:fixed;right:clamp(16px,3vw,32px);bottom:calc(clamp(16px,3vw,32px) + env(safe-area-inset-bottom,0px));z-index:50;display:flex;flex-direction:column;align-items:flex-end;gap:12px;pointer-events:none}
+.ai-fab{pointer-events:auto}
+.ai-wrap.open .ai{pointer-events:auto}
 .ai-fab{
   width:56px;height:56px;border-radius:50%;border:0;cursor:pointer;color:#fff;background:var(--accent);
   box-shadow:0 8px 24px rgba(0,122,255,.38);display:grid;place-items:center;
