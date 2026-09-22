@@ -1144,9 +1144,15 @@ applyTheme(document.documentElement.getAttribute("data-theme"),false);
     a.addEventListener("click",e=>{
       e.preventDefault();
       const url=ios?app.ios:app.android;
-      const t0=Date.now();
-      const fallback=setTimeout(()=>{if(!document.hidden&&Date.now()-t0<2500)location.href=app.web},1200);
-      document.addEventListener("visibilitychange",()=>{if(document.hidden)clearTimeout(fallback)},{once:true});
+      const t0=Date.now(); let left=false;
+      const cancel=()=>{left=true;clearTimeout(fallback)};
+      /* se l'app si apre, la pagina perde il fuoco / va in background: niente fallback */
+      ["visibilitychange","pagehide","blur"].forEach(ev=>addEventListener(ev,cancel,{once:true}));
+      const fallback=setTimeout(()=>{
+        removeEventListener("blur",cancel);
+        /* il timer che scatta al ritorno dall'app arriva in ritardo: lo ignoriamo */
+        if(!left&&!document.hidden&&document.hasFocus()&&Date.now()-t0<1500)location.href=app.web;
+      },1000);
       location.href=url;
     });
   });
