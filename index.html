@@ -1347,8 +1347,7 @@ setInterval(()=>{
 },2000);
 /* diagnostica: apri la pagina con ?debug per vedere gli eventi video */
 const DBG=location.search.includes("debug");
-function dbg(m){if(!DBG)return;let b=$("#dbgBox");if(!b){b=document.createElement("div");b.id="dbgBox";b.style.cssText="position:fixed;left:8px;bottom:8px;z-index:9999;max-width:60vw;max-height:40vh;overflow:auto;background:rgba(0,0,0,.8);color:#0f0;font:12px monospace;padding:8px;border-radius:8px;white-space:pre-wrap";document.body.appendChild(b)}b.textContent+=(performance.now()/1000).toFixed(1)+"s "+m+"
-";b.scrollTop=b.scrollHeight}
+function dbg(m){if(!DBG)return;let b=$("#dbgBox");if(!b){b=document.createElement("div");b.id="dbgBox";b.style.cssText="position:fixed;left:8px;bottom:8px;z-index:9999;max-width:60vw;max-height:40vh;overflow:auto;background:rgba(0,0,0,.8);color:#0f0;font:12px monospace;padding:8px;border-radius:8px;white-space:pre-wrap";document.body.appendChild(b)}b.textContent+=(performance.now()/1000).toFixed(1)+"s "+m+"\n";b.scrollTop=b.scrollHeight}
 if(DBG){["play","playing","pause","ended","error","emptied","stalled","suspend","abort","waiting","loadeddata","canplay"].forEach(ev=>["#vidA","#vidB"].forEach(id=>$(id).addEventListener(ev,e=>dbg(id+" "+ev+(ev==="error"&&e.target.error?" code="+e.target.error.code+" "+e.target.error.message:"")))));
   new MutationObserver(ms=>ms.forEach(m=>dbg(m.target.id+" class="+m.target.className))).observe($("#sky"),{attributes:true,attributeFilter:["class"],subtree:true});
   dbg("UA "+navigator.userAgent.slice(0,80)+" | VIDEO_OK="+VIDEO_OK);
