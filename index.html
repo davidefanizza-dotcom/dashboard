@@ -108,7 +108,7 @@ body{
   background:var(--bg);
   color:var(--txt);
   min-height:100vh;
-  padding:clamp(20px,5vw,56px) clamp(16px,4vw,40px) 64px;
+  padding:clamp(20px,5vw,56px) clamp(16px,4vw,40px) calc(64px + 72px);
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
   transition:background-color .3s var(--ease),color .3s var(--ease);
@@ -159,7 +159,7 @@ body::before{
 .rise.in{opacity:1;transform:none;transition:opacity .7s var(--ease),transform .7s var(--ease)}
 
 /* ---------- header ---------- */
-header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;position:relative;z-index:80}
 .hello{font-size:clamp(34px,6.2vw,52px);font-weight:700;letter-spacing:-.025em;line-height:1.05}
 .hello .name{color:var(--accent)}
 .sub{
@@ -218,7 +218,7 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 .sync-btn svg{width:18px;height:18px}
 .sync-btn:hover{background:rgba(120,120,128,.24)}
 .sync-btn:active{transform:scale(.92)}
-.sync-dot{position:absolute;right:2px;top:2px;width:9px;height:9px;border-radius:50%;background:var(--txt3);box-shadow:0 0 0 2px var(--bg);transition:background .3s var(--ease)}
+.sync-dot{position:absolute;right:2px;top:2px;width:9px;height:9px;border-radius:50%;background:var(--txt3);transition:background .3s var(--ease)}
 .sync-btn[data-state="ok"]{color:var(--accent)}
 .sync-btn[data-state="ok"] .sync-dot{background:#34C759}
 .sync-btn[data-state="sync"] .sync-dot{background:var(--accent);animation:pulse 1s ease-in-out infinite}
@@ -238,6 +238,11 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 .sync-foot .card-action{font-size:12px;margin:0}
 .sync-off{color:#FF3B30}
 .sync-off:hover{background:rgba(255,59,48,.1)}
+@media(max-width:600px){.sync-pop{position:fixed;left:16px;right:16px;top:var(--pop-top,90px);width:auto;transform-origin:top center}}
+.sync-pop,.ai{background:color-mix(in srgb,var(--card-solid) 94%,transparent)}
+@supports not (background:color-mix(in srgb,red,blue)){.sync-pop,.ai{background:var(--card-solid)}}
+
+@media(hover:none){#taskInput,#remInput,#remTime,#aiInput,#syncTok,#city{font-size:16px}}
 
 /* ---------- segmented control (tabs) ---------- */
 .seg{
@@ -443,7 +448,7 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 .sunpath circle{fill:#FFB300}
 
 /* ---------- assistente meteo ---------- */
-.ai-wrap{position:fixed;right:clamp(16px,3vw,32px);bottom:clamp(16px,3vw,32px);z-index:50;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+.ai-wrap{position:fixed;right:clamp(16px,3vw,32px);bottom:calc(clamp(16px,3vw,32px) + env(safe-area-inset-bottom,0px));z-index:50;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
 .ai-fab{
   width:56px;height:56px;border-radius:50%;border:0;cursor:pointer;color:#fff;background:var(--accent);
   box-shadow:0 8px 24px rgba(0,122,255,.38);display:grid;place-items:center;
@@ -465,7 +470,7 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 .ai-close svg{width:11px;height:11px}
 .ai-close:hover{background:rgba(120,120,128,.24)}
 .ai-close:active{transform:scale(.9)}
-.ai-log{display:flex;flex-direction:column;gap:8px;height:min(300px,40vh);overflow-y:auto;scrollbar-width:none;padding:2px}
+.ai-log{display:flex;flex-direction:column;gap:8px;height:min(300px,36vh);overflow-y:auto;scrollbar-width:none;padding:2px}
 .ai-log::-webkit-scrollbar{display:none}
 .msg{
   max-width:88%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.4;letter-spacing:-.01em;
@@ -692,7 +697,7 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
           </form>
           <div class="sync-foot">
             <span id="syncState">Non collegato</span>
-            <span><button class="card-action" id="syncNow">Sincronizza ora</button> <button class="card-action sync-off" id="syncOff">Scollega</button></span>
+            <span><button type="button" class="card-action" id="syncNow">Sincronizza ora</button> <button type="button" class="card-action sync-off" id="syncOff">Scollega</button></span>
           </div>
         </div>
       </div>
@@ -885,7 +890,7 @@ sw.addEventListener("click",()=>{
   try{localStorage.setItem(THEME_KEY,next)}catch(_){}
   applyTheme(next,true);
 });
-sysDark.addEventListener("change",()=>{if(!document.documentElement.getAttribute("data-theme"))applyTheme(null,true)});
+(sysDark.addEventListener?sysDark.addEventListener.bind(sysDark):sysDark.addListener.bind(sysDark))("change",()=>{if(!document.documentElement.getAttribute("data-theme"))applyTheme(null,true)});
 applyTheme(document.documentElement.getAttribute("data-theme"),false);
 
 /* ---------------- tabs ---------------- */
@@ -1782,7 +1787,7 @@ window.Sync=(()=>{
   function disconnect(){token=null;gistId=null;localStorage.removeItem(TOK_KEY);localStorage.removeItem(GIST_KEY);setStatus("off")}
   /* UI */
   const wrap=$("#syncWrap");
-  $("#syncBtn").addEventListener("click",()=>{wrap.classList.toggle("open");if(wrap.classList.contains("open")){$("#syncTok").value="";setStatus(token?(lastErr?"err":"ok"):"off");$("#syncTok").focus()}});
+  $("#syncBtn").addEventListener("click",()=>{wrap.classList.toggle("open");const r=$("#syncBtn").getBoundingClientRect();wrap.querySelector(".sync-pop").style.setProperty("--pop-top",Math.round(r.bottom+10)+"px");if(wrap.classList.contains("open")){$("#syncTok").value="";setStatus(token?(lastErr?"err":"ok"):"off");$("#syncTok").focus()}});
   $("#syncClose").addEventListener("click",()=>wrap.classList.remove("open"));
   document.addEventListener("pointerdown",e=>{if(wrap.classList.contains("open")&&!wrap.contains(e.target))wrap.classList.remove("open")});
   $("#syncForm").addEventListener("submit",e=>{e.preventDefault();connect($("#syncTok").value);$("#syncTok").value=""});
