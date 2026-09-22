@@ -491,6 +491,9 @@ html[data-scene][data-tab="weather"] .switch[aria-checked="true"]{background:var
   padding:10px 2px;border-radius:12px;transition:background .25s var(--ease);
 }
 .hour:hover{background:rgba(120,120,128,.08)}
+.hour{cursor:pointer}
+.hour.sel{background:rgba(0,122,255,.14)}
+.hour.sel .h{color:var(--accent)}
 .hour .h{font-size:12px;color:var(--txt2);font-variant-numeric:tabular-nums;font-weight:500}
 .hour .h.now{color:var(--txt);font-weight:600}
 .hour .t{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
@@ -1294,6 +1297,11 @@ function setPhoto(scene){
   img.onload=()=>{next.style.backgroundImage=`url(sky/${scene}.jpg)`;next.classList.add("on");prev.classList.remove("on");sky.classList.add("photos");photoCur=scene};
   img.src=`sky/${scene}.jpg`;
 }
+function applyScene(sc){document.documentElement.dataset.scene=sc;setPhoto(sc)}
+function sceneForHour(j){
+  const d=lastW, t=d.hourly.time[j], day=t.slice(0,10), k=d.daily.time.indexOf(day);
+  return sceneFor(d.hourly.weather_code[j],!d.hourly.is_day[j],t,d.daily.sunrise[k<0?0:k],d.daily.sunset[k<0?0:k]);
+}
 function sceneFor(code,night,nowIso,sr,ss){
   const mins=iso=>+iso.slice(11,13)*60+ +iso.slice(14,16);
   const n=mins(nowIso), golden=Math.abs(n-mins(ss))<=50||Math.abs(n-mins(sr))<=35;
@@ -1324,7 +1332,7 @@ function renderHours(k,animate){
     const pp=d.hourly.precipitation_probability[j]|0;
     const tip=`${t.slice(11,16)} · ${nfo[0]} · ${Math.round(d.hourly.temperature_2m[j])}° (perc. ${Math.round(d.hourly.apparent_temperature[j])}°) · pioggia ${pp}% · vento ${Math.round(d.hourly.wind_speed_10m[j])} km/h · umidità ${Math.round(d.hourly.relative_humidity_2m[j])}%`;
     const now=k===0&&j===start;
-    hrs.push(`<div class="hour" title="${tip}">
+    hrs.push(`<div class="hour" data-j="${j}" title="${tip} · clicca per vedere il cielo di quell'ora" role="button" tabindex="0">
       <span class="h${now?" now":""}">${now?"Ora":t.slice(11,13)}</span>
       ${icon(nfo[1],!d.hourly.is_day[j])}
       <span class="p">${pp>=10?pp+"%":""}</span>
@@ -1338,10 +1346,25 @@ function renderHours(k,animate){
   $("#hoursLabel").innerHTML=k===0?lbl:`${lbl} <button class="back-today" id="hoursBack">Oggi</button>`;
   $$("#days .day").forEach(el=>el.classList.toggle("sel",+el.dataset.k===k));
   hourDay=k;
+  if(k===0)applyScene(sceneFor(d.current.weather_code,!d.current.is_day,d.current.time,d.daily.sunrise[0],d.daily.sunset[0]));
+  else applyScene(sceneFor(d.daily.weather_code[k],false,key+"T12:00",d.daily.sunrise[k],d.daily.sunset[k]));
   renderTiles(k);
   if(animate&&!REDUCED){const t=$("#tiles");t.classList.remove("swap");void t.offsetWidth;t.classList.add("swap")}
 }
 $("#days").addEventListener("click",e=>{const r=e.target.closest(".day");if(r)renderHours(+r.dataset.k,true)});
+/* clic su un'ora: il cielo mostra quel momento */
+$("#hours").addEventListener("click",e=>{
+  const h=e.target.closest(".hour"); if(!h||!lastW)return;
+  const on=h.classList.contains("sel");
+  $$("#hours .hour.sel").forEach(x=>x.classList.remove("sel"));
+  if(on){renderHoursScene();return}
+  h.classList.add("sel"); applyScene(sceneForHour(+h.dataset.j));
+});
+function renderHoursScene(){
+  const d=lastW,k=hourDay;
+  if(k===0)applyScene(sceneFor(d.current.weather_code,!d.current.is_day,d.current.time,d.daily.sunrise[0],d.daily.sunset[0]));
+  else applyScene(sceneFor(d.daily.weather_code[k],false,d.daily.time[k]+"T12:00",d.daily.sunrise[k],d.daily.sunset[k]));
+}
 /* scorrimento orario: rotellina, frecce, trascinamento */
 (function(){
   const box=$("#hours"), prev=$("#hoursPrev"), next=$("#hoursNext");
@@ -1374,8 +1397,7 @@ function renderWeather(d){
   $("#feels").textContent=Math.round(cur.apparent_temperature)+"°";
   $("#wIcon").innerHTML=icon(info[1],night);
   countUp($("#temp"),Math.round(cur.temperature_2m),{dur:1100});
-  document.documentElement.dataset.scene=sceneFor(cur.weather_code,night,cur.time,d.daily.sunrise[0],d.daily.sunset[0]);
-  setPhoto(document.documentElement.dataset.scene);
+  applyScene(sceneFor(cur.weather_code,night,cur.time,d.daily.sunrise[0],d.daily.sunset[0]));
 
   /* ---- ore: oggi = prossime 24 dalla corrente; altri giorni = 0–23 ---- */
   const nowKey=cur.time.slice(0,13);
