@@ -339,6 +339,34 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 }
 #city:hover{background:rgba(120,120,128,.1)}
 #city:focus{background:rgba(120,120,128,.14);color:var(--txt)}
+/* ---------- cielo a tutta pagina ---------- */
+.sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;
+  background:linear-gradient(170deg,var(--sky1),var(--sky2));opacity:0;transition:opacity 1.2s var(--ease),background .8s var(--ease)}
+html[data-scene] .sky{opacity:1}
+html[data-scene] body::before{opacity:0}
+body::before{transition:opacity 1.2s var(--ease)}
+.sky .scene{inset:0}
+.sky .sun{right:-8vw;top:-14vh;width:min(60vw,560px);height:min(60vw,560px)}
+.sky .moon{right:8vw;top:7vh;width:76px;height:76px}
+.sky .cloud{width:38vw;min-width:260px;max-width:560px;height:26%;min-height:120px;max-height:190px;
+  background:radial-gradient(38% 60% at 30% 60%,rgba(255,255,255,.9),transparent 72%),
+             radial-gradient(44% 72% at 55% 40%,rgba(255,255,255,.9),transparent 72%),
+             radial-gradient(38% 56% at 78% 62%,rgba(255,255,255,.85),transparent 72%)}
+.sky .c1{left:-8vw;top:6vh}.sky .c2{left:34vw;top:-4vh}.sky .c3{left:58vw;top:26vh}.sky .c4{left:12vw;top:52vh;animation:cloudDrift 70s linear infinite reverse;animation-delay:-50s}
+.sky .rain{background-size:40px 40px}
+.sky .snow{background-size:220px 220px}.sky .snow.s2{background-size:150px 150px}
+.sky .fog{top:20%;height:80%}
+[data-scene="sunset"] .sky .sun{top:auto;bottom:-32vh;right:30vw}
+/* testi dell'header sopra il cielo */
+html[data-scene] .hello,html[data-scene] .sub,html[data-scene] #clock{color:#fff;text-shadow:0 1px 12px rgba(0,0,0,.25)}
+html[data-scene] .hello .name{color:#fff;opacity:.85}
+html[data-scene] .sub .dot{background:rgba(255,255,255,.6)}
+/* card un filo più coprenti sul cielo, per la leggibilità */
+html[data-scene] .card{background:var(--card-sky)}
+:root{--card-sky:rgba(255,255,255,.80)}
+:root[data-theme="dark"]{--card-sky:rgba(22,22,26,.78)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--card-sky:rgba(22,22,26,.78)}}
+
 /* ---------- scena meteo (hero) ----------
    Solo transform/opacity animati su pochi elementi con gradienti: costa poco. */
 .w-hero{
@@ -411,7 +439,7 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 [data-scene="clear-day"]{--sky1:#4FB0FF;--sky2:#0B63E0}
 [data-scene="clear-day"] .sun{opacity:1}
 [data-scene="sunset"]{--sky1:#FF9A5B;--sky2:#5B3CBF}
-[data-scene="sunset"] .sun{opacity:.9;top:auto;bottom:-140px;right:20%}
+[data-scene="sunset"] .sun{opacity:.9}
 [data-scene="sunset"] .c3{opacity:.5}
 [data-scene="clear-night"]{--sky1:#1B2A5B;--sky2:#050A1F}
 [data-scene="clear-night"] .moon,[data-scene="clear-night"] .stars{opacity:1}
@@ -758,6 +786,19 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 </style>
 </head>
 <body>
+<div class="sky" id="sky" aria-hidden="true">
+  <div class="scene">
+    <i class="sun"></i>
+    <i class="moon"></i>
+    <i class="stars"></i>
+    <i class="stars s2"></i>
+    <i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i><i class="cloud c4"></i>
+    <i class="rain"></i>
+    <i class="snow"></i><i class="snow s2"></i>
+    <i class="fog"></i>
+    <i class="bolt"></i>
+  </div>
+</div>
 <div class="wrap">
 
   <header class="rise" id="hdr">
@@ -860,18 +901,7 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 
       <div id="wBody" class="hidden wBody w-layout">
         <div class="w-left">
-          <div class="w-hero" id="wHero" data-scene="clear-day">
-            <div class="scene" aria-hidden="true">
-              <i class="sun"></i>
-              <i class="moon"></i>
-              <i class="stars"></i>
-              <i class="stars s2"></i>
-              <i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i>
-              <i class="rain"></i>
-              <i class="snow"></i><i class="snow s2"></i>
-              <i class="fog"></i>
-              <i class="bolt"></i>
-            </div>
+          <div class="w-hero" id="wHero">
             <div class="w-main">
               <div>
                 <div class="big"><span id="temp">0</span><span class="unit">°</span></div>
@@ -1253,7 +1283,7 @@ function renderWeather(d){
   $("#feels").textContent=Math.round(cur.apparent_temperature)+"°";
   $("#wIcon").innerHTML=icon(info[1],night);
   countUp($("#temp"),Math.round(cur.temperature_2m),{dur:1100});
-  $("#wHero").dataset.scene=sceneFor(cur.weather_code,night,cur.time,d.daily.sunrise[0],d.daily.sunset[0]);
+  document.documentElement.dataset.scene=sceneFor(cur.weather_code,night,cur.time,d.daily.sunrise[0],d.daily.sunset[0]);
 
   /* ---- ore: oggi = prossime 24 dalla corrente; altri giorni = 0–23 ---- */
   const nowKey=cur.time.slice(0,13);
