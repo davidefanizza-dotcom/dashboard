@@ -1323,6 +1323,11 @@ function syncVideoPlayback(){
 }
 document.addEventListener("visibilitychange",syncVideoPlayback);
 new MutationObserver(syncVideoPlayback).observe(document.documentElement,{attributes:true,attributeFilter:["data-tab"]});
+function applyScene(sc){document.documentElement.dataset.scene=sc;setPhoto(sc)}
+function sceneForHour(j){
+  const d=lastW, t=d.hourly.time[j], day=t.slice(0,10), k=d.daily.time.indexOf(day);
+  return sceneFor(d.hourly.weather_code[j],!d.hourly.is_day[j],t,d.daily.sunrise[k<0?0:k],d.daily.sunset[k<0?0:k]);
+}
 function sceneFor(code,night,nowIso,sr,ss){
   const mins=iso=>+iso.slice(11,13)*60+ +iso.slice(14,16);
   const n=mins(nowIso), golden=Math.abs(n-mins(ss))<=50||Math.abs(n-mins(sr))<=35;
