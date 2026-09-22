@@ -339,49 +339,98 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 }
 #city:hover{background:rgba(120,120,128,.1)}
 #city:focus{background:rgba(120,120,128,.14);color:var(--txt)}
-/* ---------- cielo a tutta pagina ---------- */
+/* ---------- cielo a tutta pagina ----------
+   Elementi vettoriali (SVG) per sole, luna e nuvole; un canvas per pioggia,
+   neve, stelle e fulmini. Il canvas gira a 30 fps solo con il tab Meteo attivo. */
 .sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;
   background:linear-gradient(180deg,var(--sky1) 0%,var(--skyM,var(--sky2)) 55%,var(--sky2) 100%);
   opacity:0;transition:opacity 1.2s var(--ease),background .8s var(--ease)}
-.sky::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 50% at 50% 100%,var(--horizon,transparent),transparent 70%)}
-.sky::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.28))}
+.sky::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 50% at 50% 100%,var(--horizon,transparent),transparent 70%);animation:horizonBreath 9s ease-in-out infinite}
+@keyframes horizonBreath{50%{opacity:.55}}
+.sky::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.26))}
 html[data-scene][data-tab="weather"] .sky{opacity:1}
 html[data-scene][data-tab="weather"] body::before{opacity:0}
 body::before{transition:opacity 1.2s var(--ease)}
-.sky .scene{inset:0}
-.sky .sun{right:-16vw;top:-30vh;width:min(70vw,680px);height:min(70vw,680px)}
-.sky .moon{right:8vw;top:7vh;width:76px;height:76px}
-.sky .cloud{width:38vw;min-width:260px;max-width:560px;height:26%;min-height:120px;max-height:190px;
-  background:radial-gradient(38% 60% at 30% 60%,rgba(255,255,255,.9),transparent 72%),
-             radial-gradient(44% 72% at 55% 40%,rgba(255,255,255,.9),transparent 72%),
-             radial-gradient(38% 56% at 78% 62%,rgba(255,255,255,.85),transparent 72%)}
-.sky .cloud{left:0;animation:cloudCross linear infinite;will-change:transform}
-.sky .c1{top:5vh;animation-duration:75s;animation-delay:-10s}
-.sky .c2{top:-3vh;animation-duration:95s;animation-delay:-55s;scale:.8}
-.sky .c3{top:22vh;animation-duration:85s;animation-delay:-30s;scale:1.15}
-.sky .c4{top:48vh;animation-duration:110s;animation-delay:-80s;scale:.9}
-@keyframes cloudCross{from{transform:translateX(-45vw)}to{transform:translateX(105vw)}}
-/* sole: raggi che ruotano lentamente + respiro */
-.sky .sun{background:
-  conic-gradient(from 0deg,rgba(255,255,255,0) 0 8%,rgba(255,255,255,.10) 10%,rgba(255,255,255,0) 12% 25%,rgba(255,255,255,.10) 27%,rgba(255,255,255,0) 29% 42%,rgba(255,255,255,.10) 44%,rgba(255,255,255,0) 46% 58%,rgba(255,255,255,.10) 60%,rgba(255,255,255,0) 62% 75%,rgba(255,255,255,.10) 77%,rgba(255,255,255,0) 79% 92%,rgba(255,255,255,.10) 94%,rgba(255,255,255,0) 96%),
-  radial-gradient(circle,rgba(255,240,170,1) 0 16%,rgba(255,214,90,.55) 30%,rgba(255,200,80,.18) 48%,transparent 66%);
-  animation:sunSpin 90s linear infinite,sunGlow 7s ease-in-out infinite}
-@keyframes sunSpin{to{rotate:360deg}}
-/* bagliore all'orizzonte che respira */
-.sky::before{animation:horizonBreath 9s ease-in-out infinite}
-@keyframes horizonBreath{50%{opacity:.55}}
-/* nuvole leggere anche col sereno, così il cielo vive sempre */
-[data-scene="clear-day"] .sky .c1,[data-scene="clear-day"] .sky .c3{opacity:.45}
-[data-scene="clear-day"] .sky .c2{opacity:.3}
-[data-scene="sunset"] .sky .c1,[data-scene="sunset"] .sky .c2{opacity:.5}
-[data-scene="clear-night"] .sky .c2{opacity:.12}
-[data-scene="cloudy-night"] .sky .cloud{opacity:.28}
-@media(max-width:600px){.sky .c3,.sky .c4{display:none}}
-.sky .rain{background-size:40px 40px}
-.sky .snow{background-size:220px 220px}.sky .snow.s2{background-size:150px 150px}
-.sky .fog{top:20%;height:80%}
-[data-scene="sunset"] .sky .sun{top:auto;bottom:-32vh;right:30vw}
-/* testi dell'header sopra il cielo */
+.sky-defs{position:absolute}
+.sky>svg,.sky>div,.sky>canvas{position:absolute;opacity:0;transition:opacity 1.2s var(--ease)}
+#fx{inset:0;width:100%;height:100%}
+
+/* sole: alone che respira, raggi che ruotano */
+.sky .sun{right:-14vw;top:-26vh;width:min(72vw,720px);height:min(72vw,720px);animation:sunBreath 7s ease-in-out infinite}
+.sky .sun .rays{transform-origin:200px 200px;animation:sunSpin 80s linear infinite}
+@keyframes sunBreath{50%{transform:scale(1.04)}}
+@keyframes sunSpin{to{transform:rotate(360deg)}}
+[data-scene="sunset"] .sky .sun{top:auto;bottom:-30vh;right:28vw;filter:none}
+
+/* luna */
+.sky .moon{right:7vw;top:6vh;width:220px;height:220px;animation:moonBreath 8s ease-in-out infinite}
+@keyframes moonBreath{50%{transform:scale(1.03)}}
+
+/* nuvole: attraversano lo schermo a profondità diverse con leggero beccheggio */
+.sky .clouds{inset:0}
+.sky .cloud{position:absolute;left:0;width:var(--w);height:calc(var(--w) * .4);overflow:visible;
+  animation:cloudCross var(--dur) linear infinite,cloudBob 11s ease-in-out infinite;animation-delay:var(--delay),0s;
+  opacity:var(--o,1);will-change:transform}
+.sky .cloud.dark{opacity:var(--od,0)}
+.sky .c1{--w:min(46vw,560px);top:4vh;--dur:80s;--delay:-12s}
+.sky .c2{--w:min(34vw,400px);top:-2vh;--dur:110s;--delay:-60s}
+.sky .c3{--w:min(56vw,680px);top:20vh;--dur:92s;--delay:-35s}
+.sky .c4{--w:min(30vw,340px);top:46vh;--dur:125s;--delay:-90s}
+.sky .c5{--w:min(60vw,760px);top:-6vh;--dur:100s;--delay:-20s}
+.sky .c6{--w:min(50vw,620px);top:16vh;--dur:120s;--delay:-75s}
+@keyframes cloudCross{from{translate:-60vw 0}to{translate:110vw 0}}
+@keyframes cloudBob{50%{transform:translateY(-1.2vh)}}
+@media(max-width:600px){.sky .c3,.sky .c4,.sky .c6{display:none}}
+
+/* nebbia: tre veli che scorrono a velocità diverse */
+.sky .fog{left:-20%;right:-20%;height:45%;
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.28) 35%,rgba(255,255,255,.42) 65%,transparent);
+  animation:fogDrift ease-in-out infinite alternate}
+.sky .f1{top:12%;animation-duration:18s}
+.sky .f2{top:38%;animation-duration:24s;animation-delay:-8s}
+.sky .f3{top:62%;animation-duration:30s;animation-delay:-15s}
+@keyframes fogDrift{from{transform:translateX(-4%)}to{transform:translateX(4%)}}
+
+/* lampo (l'intensità la decide il JS) */
+.sky .flash{inset:0;background:radial-gradient(60% 50% at var(--fx,50%) 0%,rgba(255,255,255,.95),rgba(255,255,255,.35) 40%,transparent 75%);transition:none}
+
+/* scene: quali strati accendere */
+[data-scene="clear-day"]{--sky1:#5DC1FF;--skyM:#2A8BF5;--sky2:#0F4FC2;--horizon:rgba(255,255,255,.22)}
+[data-scene="clear-day"] .sky .sun,[data-scene="clear-day"] .sky .clouds{opacity:1}
+[data-scene="clear-day"] .sky .cloud{--o:.75}
+[data-scene="clear-day"] .sky .c3,[data-scene="clear-day"] .sky .c4{--o:0}
+[data-scene="sunset"]{--sky1:#5C4BB8;--skyM:#E8698C;--sky2:#FFB067;--horizon:rgba(255,220,150,.45)}
+[data-scene="sunset"] .sky .sun,[data-scene="sunset"] .sky .clouds{opacity:1}
+[data-scene="sunset"] .sky .cloud{--o:.85}
+[data-scene="clear-night"]{--sky1:#0D1A3F;--skyM:#101C45;--sky2:#040814;--horizon:rgba(90,120,200,.18)}
+[data-scene="clear-night"] .sky .moon,[data-scene="clear-night"] #fx,[data-scene="clear-night"] .sky .clouds{opacity:1}
+[data-scene="clear-night"] .sky .cloud{--o:0}
+[data-scene="clear-night"] .sky .c2{--o:.12}
+[data-scene="cloudy-day"]{--sky1:#8FB6E0;--skyM:#5E8CC2;--sky2:#3B5F8F;--horizon:rgba(255,255,255,.2)}
+[data-scene="cloudy-day"] .sky .sun{opacity:.55}
+[data-scene="cloudy-day"] .sky .clouds{opacity:1}
+[data-scene="cloudy-night"]{--sky1:#22304F;--skyM:#182338;--sky2:#0B1020}
+[data-scene="cloudy-night"] .sky .moon{opacity:.85}
+[data-scene="cloudy-night"] .sky .clouds,[data-scene="cloudy-night"] #fx{opacity:1}
+[data-scene="cloudy-night"] .sky .cloud{--o:.35}
+[data-scene="overcast"]{--sky1:#A3AFC0;--skyM:#7A889C;--sky2:#4A5567}
+[data-scene="overcast"] .sky .clouds{opacity:1}
+[data-scene="overcast"] .sky .cloud{--o:.9;--od:.9}
+[data-scene="rain"]{--sky1:#66799A;--skyM:#3E4D68;--sky2:#1C2537}
+[data-scene="rain"] .sky .clouds,[data-scene="rain"] #fx{opacity:1}
+[data-scene="rain"] .sky .cloud{--o:.55;--od:.95}
+[data-scene="storm"]{--sky1:#39465F;--skyM:#1F2839;--sky2:#0A0E18}
+[data-scene="storm"] .sky .clouds,[data-scene="storm"] #fx{opacity:1}
+[data-scene="storm"] .sky .cloud{--o:.4;--od:1}
+[data-scene="snow"]{--sky1:#B8C9E0;--skyM:#7F98BD;--sky2:#4A6187;--horizon:rgba(255,255,255,.3)}
+[data-scene="snow"] .sky .clouds,[data-scene="snow"] #fx{opacity:1}
+[data-scene="snow"] .sky .cloud{--o:.8;--od:.5}
+[data-scene="fog"]{--sky1:#B4BDC9;--skyM:#8A95A6;--sky2:#5A6474}
+[data-scene="fog"] .sky .fog,[data-scene="fog"] .sky .clouds{opacity:1}
+[data-scene="fog"] .sky .cloud{--o:.35}
+@media(prefers-reduced-motion:reduce){.sky *{animation:none!important}}
+
+/* testi e controlli dell'header sopra il cielo */
 html[data-scene][data-tab="weather"] .hello,html[data-scene][data-tab="weather"] .sub,html[data-scene][data-tab="weather"] #clock{color:#fff;text-shadow:0 1px 14px rgba(0,0,0,.28)}
 html[data-scene][data-tab="weather"] .sub .dot{background:rgba(255,255,255,.6)}
 html[data-scene][data-tab="weather"] .hello .name{color:#fff;opacity:.8}
@@ -406,87 +455,7 @@ html[data-scene][data-tab="weather"] .switch[aria-checked="true"]{background:var
 .w-hero .big .unit{color:rgba(255,255,255,.75)}
 .w-hero .cap,.w-hero .w-mm{color:rgba(255,255,255,.85)}
 .w-hero .w-main{position:relative;z-index:1}
-.scene{position:absolute;inset:0;pointer-events:none;z-index:0}
-.scene i{position:absolute;display:block;opacity:0;transition:opacity 1s var(--ease)}
 .w-hero .w-icon{filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))}
-
-/* sole */
-.scene .sun{right:-40px;top:-60px;width:240px;height:240px;border-radius:50%;
-  background:radial-gradient(circle,rgba(255,236,150,.95) 0 22%,rgba(255,210,80,.45) 40%,transparent 70%);
-  animation:sunGlow 6s ease-in-out infinite}
-@keyframes sunGlow{50%{transform:scale(1.08)}}
-/* luna e stelle */
-.scene .moon{right:34px;top:18px;width:54px;height:54px;border-radius:50%;
-  background:radial-gradient(circle at 35% 35%,#FFF9E0,#E6E0C8 70%);
-  box-shadow:0 0 40px rgba(255,250,220,.35)}
-.scene .stars{inset:0;background:
-  radial-gradient(1.5px 1.5px at 12% 22%,#fff,transparent 60%),radial-gradient(1px 1px at 28% 60%,#fff,transparent 60%),
-  radial-gradient(1.5px 1.5px at 45% 18%,#fff,transparent 60%),radial-gradient(1px 1px at 62% 48%,#fff,transparent 60%),
-  radial-gradient(1.5px 1.5px at 78% 30%,#fff,transparent 60%),radial-gradient(1px 1px at 88% 68%,#fff,transparent 60%),
-  radial-gradient(1px 1px at 20% 80%,#fff,transparent 60%),radial-gradient(1.5px 1.5px at 55% 78%,#fff,transparent 60%);
-  animation:twinkle 4s ease-in-out infinite}
-.scene .stars.s2{background:
-  radial-gradient(1px 1px at 8% 50%,#fff,transparent 60%),radial-gradient(1.5px 1.5px at 36% 36%,#fff,transparent 60%),
-  radial-gradient(1px 1px at 70% 12%,#fff,transparent 60%),radial-gradient(1px 1px at 92% 44%,#fff,transparent 60%),
-  radial-gradient(1.5px 1.5px at 40% 88%,#fff,transparent 60%);animation-delay:2s}
-@keyframes twinkle{50%{opacity:.35}}
-/* nuvole */
-.scene .cloud{height:70px;width:190px;border-radius:60px;
-  background:radial-gradient(60px 44px at 30% 60%,rgba(255,255,255,.95),transparent 72%),
-             radial-gradient(70px 52px at 55% 40%,rgba(255,255,255,.95),transparent 72%),
-             radial-gradient(60px 40px at 78% 62%,rgba(255,255,255,.9),transparent 72%);
-  will-change:transform}
-.scene .c1{left:-30px;top:10px;animation:cloudDrift 46s linear infinite}
-.scene .c2{left:38%;top:-18px;transform:scale(.8);animation:cloudDrift 62s linear infinite reverse;animation-delay:-20s}
-.scene .c3{left:64%;bottom:-24px;transform:scale(1.15);animation:cloudDrift 54s linear infinite;animation-delay:-35s}
-@keyframes cloudDrift{from{translate:-8% 0}to{translate:8% 0}}
-/* pioggia: gradiente ripetuto, si muove solo la traslazione */
-.scene .rain{left:0;right:0;top:-100%;height:200%;
-  background:repeating-linear-gradient(105deg,transparent 0 14px,rgba(255,255,255,.35) 14px 15.5px,transparent 15.5px 30px);
-  background-size:30px 30px;animation:rainFall .7s linear infinite;will-change:transform}
-@keyframes rainFall{to{transform:translateY(50%)}}
-/* neve */
-.scene .snow{left:0;right:0;top:-100%;height:200%;
-  background:radial-gradient(3px 3px at 10% 10%,#fff,transparent 60%),radial-gradient(2px 2px at 30% 40%,#fff,transparent 60%),
-    radial-gradient(3px 3px at 55% 20%,#fff,transparent 60%),radial-gradient(2px 2px at 75% 55%,#fff,transparent 60%),
-    radial-gradient(3px 3px at 90% 30%,#fff,transparent 60%),radial-gradient(2px 2px at 45% 80%,#fff,transparent 60%);
-  background-size:160px 160px;animation:snowFall 9s linear infinite;will-change:transform}
-.scene .snow.s2{background-size:110px 110px;animation-duration:13s;opacity:0}
-@keyframes snowFall{to{transform:translateY(50%)}}
-/* nebbia */
-.scene .fog{left:-10%;right:-10%;top:30%;height:60%;
-  background:linear-gradient(180deg,transparent,rgba(255,255,255,.35) 40%,rgba(255,255,255,.5) 70%,rgba(255,255,255,.3));
-  animation:fogDrift 12s ease-in-out infinite alternate}
-@keyframes fogDrift{to{transform:translateX(4%)}}
-/* fulmine */
-.scene .bolt{inset:0;background:rgba(255,255,255,.85);animation:lightning 7s linear infinite}
-@keyframes lightning{0%,88%,100%{opacity:0}89%{opacity:.7}90%{opacity:0}92%{opacity:.5}93%{opacity:0}}
-
-/* scene: cielo + quali strati accendere */
-[data-scene="clear-day"]{--sky1:#5DC1FF;--skyM:#2A8BF5;--sky2:#0F4FC2;--horizon:rgba(255,255,255,.22)}
-[data-scene="clear-day"] .sun{opacity:1}
-[data-scene="sunset"]{--sky1:#5C4BB8;--skyM:#E8698C;--sky2:#FFB067;--horizon:rgba(255,220,150,.45)}
-[data-scene="sunset"] .sun{opacity:.9}
-[data-scene="sunset"] .c3{opacity:.5}
-[data-scene="clear-night"]{--sky1:#0D1A3F;--skyM:#101C45;--sky2:#040814;--horizon:rgba(90,120,200,.18)}
-[data-scene="clear-night"] .moon,[data-scene="clear-night"] .stars{opacity:1}
-[data-scene="cloudy-day"]{--sky1:#8FB6E0;--skyM:#5E8CC2;--sky2:#3B5F8F;--horizon:rgba(255,255,255,.2)}
-[data-scene="cloudy-day"] .cloud{opacity:.95}
-[data-scene="cloudy-day"] .sun{opacity:.35}
-[data-scene="cloudy-night"]{--sky1:#22304F;--skyM:#182338;--sky2:#0B1020}
-[data-scene="cloudy-night"] .cloud{opacity:.35}
-[data-scene="cloudy-night"] .moon{opacity:.8}[data-scene="cloudy-night"] .stars{opacity:.5}
-[data-scene="overcast"]{--sky1:#A3AFC0;--skyM:#7A889C;--sky2:#4A5567}
-[data-scene="overcast"] .cloud{opacity:.8}
-[data-scene="rain"]{--sky1:#66799A;--skyM:#3E4D68;--sky2:#1C2537}
-[data-scene="rain"] .cloud{opacity:.55}[data-scene="rain"] .rain{opacity:1}
-[data-scene="storm"]{--sky1:#39465F;--skyM:#1F2839;--sky2:#0A0E18}
-[data-scene="storm"] .cloud{opacity:.5}[data-scene="storm"] .rain{opacity:.9}[data-scene="storm"] .bolt{opacity:1}
-[data-scene="snow"]{--sky1:#B8C9E0;--skyM:#7F98BD;--sky2:#4A6187;--horizon:rgba(255,255,255,.3)}
-[data-scene="snow"] .cloud{opacity:.6}[data-scene="snow"] .snow{opacity:.95}[data-scene="snow"] .snow.s2{opacity:.6}
-[data-scene="fog"]{--sky1:#B4BDC9;--skyM:#8A95A6;--sky2:#5A6474}
-[data-scene="fog"] .fog{opacity:1}[data-scene="fog"] .cloud{opacity:.3}
-@media(prefers-reduced-motion:reduce){.scene i{animation:none!important}}
 
 .w-main{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .w-icon{width:96px;height:96px;flex:none}
@@ -814,17 +783,88 @@ html[data-scene][data-tab="weather"] .switch[aria-checked="true"]{background:var
 </head>
 <body>
 <div class="sky" id="sky" aria-hidden="true">
-  <div class="scene">
-    <i class="sun"></i>
-    <i class="moon"></i>
-    <i class="stars"></i>
-    <i class="stars s2"></i>
-    <i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i><i class="cloud c4"></i>
-    <i class="rain"></i>
-    <i class="snow"></i><i class="snow s2"></i>
-    <i class="fog"></i>
-    <i class="bolt"></i>
+  <svg class="sky-defs" width="0" height="0">
+    <defs>
+      <!-- nuvola: puff sovrapposti, luce dall'alto e base in ombra -->
+      <linearGradient id="cloudFill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffffff"/>
+        <stop offset=".55" stop-color="#f6f9ff"/>
+        <stop offset="1" stop-color="#c9d5e6"/>
+      </linearGradient>
+      <linearGradient id="cloudDark" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#e3e9f2"/>
+        <stop offset="1" stop-color="#8e9bb0"/>
+      </linearGradient>
+      <radialGradient id="sunCore" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="#fffbe6"/>
+        <stop offset=".35" stop-color="#ffe98a"/>
+        <stop offset=".62" stop-color="#ffc74d" stop-opacity=".9"/>
+        <stop offset="1" stop-color="#ffb43a" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="sunHalo" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="#fff2b0" stop-opacity=".55"/>
+        <stop offset=".5" stop-color="#ffd57a" stop-opacity=".18"/>
+        <stop offset="1" stop-color="#ffd57a" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="moonFill" cx=".38" cy=".35" r=".7">
+        <stop offset="0" stop-color="#fffbe9"/>
+        <stop offset=".7" stop-color="#e8e2cd"/>
+        <stop offset="1" stop-color="#bdb7a4"/>
+      </radialGradient>
+      <radialGradient id="moonGlow" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="#fff6d8" stop-opacity=".45"/>
+        <stop offset="1" stop-color="#fff6d8" stop-opacity="0"/>
+      </radialGradient>
+      <symbol id="cloudA" viewBox="0 0 400 160">
+        <ellipse cx="200" cy="150" rx="170" ry="14" fill="#000" opacity=".08"/>
+        <path d="M70 140h250a48 48 0 0 0 10-95 70 70 0 0 0-128-24 56 56 0 0 0-84 30 44 44 0 0 0-48 89z" fill="url(#cloudFill)"/>
+        <path d="M70 140h250a48 48 0 0 0 20-8c-40 8-90 10-140 6-60-5-95-12-138-30a44 44 0 0 0 8 32z" fill="#000" opacity=".06"/>
+        <ellipse cx="150" cy="60" rx="46" ry="30" fill="#fff" opacity=".7"/>
+        <ellipse cx="240" cy="50" rx="34" ry="24" fill="#fff" opacity=".6"/>
+      </symbol>
+      <symbol id="cloudB" viewBox="0 0 400 160">
+        <ellipse cx="200" cy="150" rx="150" ry="12" fill="#000" opacity=".07"/>
+        <path d="M60 138h270a44 44 0 0 0 4-88 60 60 0 0 0-110-28 52 52 0 0 0-92 20 46 46 0 0 0-72 96z" fill="url(#cloudFill)"/>
+        <path d="M60 138h270a44 44 0 0 0 16-6c-60 10-120 8-170 2-45-5-80-14-118-30 0 12 2 24 2 34z" fill="#000" opacity=".06"/>
+        <ellipse cx="120" cy="70" rx="40" ry="26" fill="#fff" opacity=".65"/>
+        <ellipse cx="225" cy="58" rx="42" ry="28" fill="#fff" opacity=".7"/>
+      </symbol>
+      <symbol id="cloudDarkA" viewBox="0 0 400 160">
+        <path d="M70 140h250a48 48 0 0 0 10-95 70 70 0 0 0-128-24 56 56 0 0 0-84 30 44 44 0 0 0-48 89z" fill="url(#cloudDark)"/>
+        <path d="M70 140h250a48 48 0 0 0 20-8c-40 8-90 10-140 6-60-5-95-12-138-30a44 44 0 0 0 8 32z" fill="#000" opacity=".12"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <svg class="sun" viewBox="0 0 400 400">
+    <circle cx="200" cy="200" r="200" fill="url(#sunHalo)"/>
+    <g class="rays">
+      <path d="M200 200 L188 0 L212 0Z M200 200 L400 188 L400 212Z M200 200 L212 400 L188 400Z M200 200 L0 212 L0 188Z M200 200 L332 60 L350 76Z M200 200 L340 340 L324 356Z M200 200 L60 332 L44 316Z M200 200 L50 50 L66 34Z" fill="#fff" opacity=".07"/>
+    </g>
+    <circle cx="200" cy="200" r="92" fill="url(#sunCore)"/>
+  </svg>
+
+  <svg class="moon" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="100" fill="url(#moonGlow)"/>
+    <circle cx="100" cy="100" r="42" fill="url(#moonFill)"/>
+    <circle cx="86" cy="88" r="7" fill="#c9c2ad" opacity=".55"/>
+    <circle cx="112" cy="110" r="5" fill="#c9c2ad" opacity=".5"/>
+    <circle cx="104" cy="82" r="3.5" fill="#c9c2ad" opacity=".45"/>
+    <circle cx="90" cy="114" r="4" fill="#c9c2ad" opacity=".4"/>
+  </svg>
+
+  <div class="clouds">
+    <svg class="cloud c1"><use href="#cloudA"/></svg>
+    <svg class="cloud c2"><use href="#cloudB"/></svg>
+    <svg class="cloud c3"><use href="#cloudA"/></svg>
+    <svg class="cloud c4"><use href="#cloudB"/></svg>
+    <svg class="cloud c5 dark"><use href="#cloudDarkA"/></svg>
+    <svg class="cloud c6 dark"><use href="#cloudDarkA"/></svg>
   </div>
+  <div class="fog f1"></div><div class="fog f2"></div><div class="fog f3"></div>
+  <canvas id="fx"></canvas>
+  <div class="flash" id="flash"></div>
+</div>
 </div>
 <div class="wrap">
 
@@ -1978,6 +2018,101 @@ window.Sync=(()=>{
   setInterval(()=>{if(token&&!document.hidden)sync()},60*1000);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden&&token)sync()});
   return {touch,sync,connected:()=>!!token};
+})();
+
+/* ================= EFFETTI CIELO (canvas) =================
+   Pioggia, neve, stelle e fulmini disegnati su un solo canvas a 30 fps.
+   Si ferma quando il tab Meteo non è attivo, la pagina è nascosta o
+   l'utente preferisce meno animazioni. Particelle proporzionate all'area. */
+const SkyFX=(()=>{
+  const cv=document.getElementById("fx"), ctx=cv.getContext("2d");
+  const flash=document.getElementById("flash");
+  let W=0,H=0,DPR=1,mode="none",raf=0,last=0,drops=[],flakes=[],stars=[],nextBolt=0;
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  function resize(){
+    DPR=Math.min(2,devicePixelRatio||1);
+    W=innerWidth;H=innerHeight;
+    cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    build();
+  }
+  function build(){
+    const area=W*H/1e6; // megapixel css
+    drops=[];flakes=[];stars=[];
+    if(mode==="rain"||mode==="storm"){
+      const n=Math.round((mode==="storm"?260:190)*Math.min(1.4,area+.3));
+      for(let i=0;i<n;i++)drops.push({x:rnd(-W*.2,W*1.2),y:rnd(-H,H),z:rnd(.4,1),l:rnd(14,30),a:rnd(.18,.45)});
+    }
+    if(mode==="snow"){
+      const n=Math.round(150*Math.min(1.4,area+.3));
+      for(let i=0;i<n;i++)flakes.push({x:rnd(0,W),y:rnd(-H,H),r:rnd(1,3.6),s:rnd(.6,1.6),p:rnd(0,Math.PI*2),w:rnd(.6,1.4),a:rnd(.5,.95)});
+    }
+    if(mode==="clear-night"||mode==="cloudy-night"){
+      const n=Math.round((mode==="clear-night"?170:70)*Math.min(1.4,area+.3));
+      for(let i=0;i<n;i++)stars.push({x:rnd(0,W),y:rnd(0,H*.75),r:rnd(.5,1.7),p:rnd(0,Math.PI*2),f:rnd(.4,1.6),a:rnd(.35,1)});
+    }
+  }
+  function frame(t){
+    raf=requestAnimationFrame(frame);
+    if(t-last<33)return; const dt=Math.min(.06,(t-last)/1000||.033); last=t;
+    ctx.clearRect(0,0,W,H);
+    if(drops.length){
+      const wind=mode==="storm"?.42:.18, spd=mode==="storm"?1500:1050;
+      ctx.lineCap="round";
+      for(const d of drops){
+        d.y+=spd*d.z*dt; d.x+=spd*wind*d.z*dt;
+        if(d.y>H+40){d.y=rnd(-120,-20);d.x=rnd(-W*.2,W*1.2)}
+        ctx.strokeStyle=`rgba(210,225,255,${d.a*d.z})`;ctx.lineWidth=d.z*1.4;
+        ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x-wind*d.l*d.z,d.y-d.l*d.z);ctx.stroke();
+      }
+    }
+    if(flakes.length){
+      ctx.fillStyle="#fff";
+      for(const f of flakes){
+        f.p+=dt*f.w; f.y+=(28+f.r*14)*f.s*dt; f.x+=Math.sin(f.p)*18*dt+6*dt;
+        if(f.y>H+6){f.y=-8;f.x=rnd(0,W)} if(f.x>W+8)f.x=-8;
+        ctx.globalAlpha=f.a; ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill();
+      }
+      ctx.globalAlpha=1;
+    }
+    if(stars.length){
+      ctx.fillStyle="#fff";
+      for(const s of stars){
+        s.p+=dt*s.f; const a=s.a*(.55+.45*Math.sin(s.p));
+        ctx.globalAlpha=a; ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+        if(s.r>1.3){ctx.globalAlpha=a*.35;ctx.fillRect(s.x-s.r*3,s.y-.4,s.r*6,.8);ctx.fillRect(s.x-.4,s.y-s.r*3,.8,s.r*6)}
+      }
+      ctx.globalAlpha=1;
+    }
+    if(mode==="storm"&&t>nextBolt){
+      nextBolt=t+rnd(3500,9000);
+      const x=rnd(15,85); flash.style.setProperty("--fx",x+"%");
+      const seq=[[1,60],[0,70],[.7,50],[0,90],[.35,40],[0,0]]; let i=0;
+      (function step(){const [o,ms]=seq[i++]; flash.style.opacity=o; if(i<seq.length)setTimeout(step,ms)})();
+      drawBolt(x/100*W);
+    }
+  }
+  function drawBolt(x){
+    let y=0, pts=[[x,0]];
+    while(y<H*.55){y+=rnd(18,40);x+=rnd(-26,26);pts.push([x,y])}
+    const draw=(w,a)=>{ctx.strokeStyle=`rgba(255,255,255,${a})`;ctx.lineWidth=w;ctx.lineJoin="round";ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke()};
+    draw(8,.25);draw(3,.7);draw(1.2,1);
+  }
+  function wants(){
+    return document.documentElement.dataset.tab==="weather"&&!document.hidden&&!REDUCED&&
+      ["rain","storm","snow","clear-night","cloudy-night"].includes(mode);
+  }
+  function update(){
+    const m=document.documentElement.dataset.scene||"none";
+    if(m!==mode){mode=m;build()}
+    if(wants()){if(!raf){last=0;raf=requestAnimationFrame(frame)}}
+    else if(raf){cancelAnimationFrame(raf);raf=0;ctx.clearRect(0,0,W,H)}
+  }
+  addEventListener("resize",resize,{passive:true});
+  document.addEventListener("visibilitychange",update);
+  new MutationObserver(update).observe(document.documentElement,{attributes:true,attributeFilter:["data-scene","data-tab"]});
+  resize(); update();
+  return {update};
 })();
 
 /* refresh periodico */
