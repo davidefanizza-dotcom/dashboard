@@ -1343,7 +1343,7 @@ function showPhoto(scene){
   img.onload=()=>{next.style.backgroundImage=`url(sky/${scene}.jpg)`;next.classList.add("on");prev.classList.remove("on");sky.classList.add("photos");photoCur=scene};
   img.src=`sky/${scene}.jpg`;
 }
-function hideVideos(){["#vidA","#vidB"].forEach(id=>{const v=$(id);v.classList.remove("on");v.pause()});vidCur="";vidLoading="";$("#sky").classList.remove("video")}
+function hideVideos(){["#vidA","#vidB"].forEach(id=>{const v=$(id);v.classList.remove("on");v.pause()});vidCur="";vidLoading="";loopFading=false;$("#sky").classList.remove("video")}
 let vidLoading="";
 function showVideo(scene){
   const A=$("#vidA"), B=$("#vidB");
@@ -1358,7 +1358,7 @@ function showVideo(scene){
     next.play().then(()=>{
       if(vidLoading!==scene)return;
       next.classList.add("on"); prev.classList.remove("on");
-      setTimeout(()=>{if(!prev.classList.contains("on"))prev.pause()},1700);
+      setTimeout(()=>{if(!prev.classList.contains("on")){prev.pause();primeTwin(prev)}},1700);
       $("#sky").classList.add("video"); vidCur=scene; vidLoading="";
     }).catch(err=>{
       /* AbortError = play interrotto da un pause/load: non è un errore del video, riprovo */
@@ -1367,6 +1367,29 @@ function showVideo(scene){
     });
   };
 }
+/* loop morbido: invece del riavvio secco, poco prima della fine il gemello riparte da zero e i due si dissolvono */
+const LOOP_FADE=1.8;                                   /* secondi prima della fine (>= transizione CSS 1.6s) */
+let loopFading=false;
+function primeTwin(w){                                 /* prepara il video spento con lo stesso file di quello in onda */
+  if(!vidCur||vidLoading||w.classList.contains("on"))return;
+  const src=`sky/video/${vidCur}.mp4`;
+  if(!w.currentSrc.endsWith(src)){w.onerror=null;w.oncanplay=null;w.src=src;w.load()}
+  else{try{w.currentTime=0}catch(e){}}
+}
+function softLoop(e){
+  const v=e.target;
+  if(loopFading||vidLoading||!vidCur||!v.classList.contains("on")||!v.duration)return;
+  if(v.duration-v.currentTime>LOOP_FADE)return;
+  const w=v.id==="vidA"?$("#vidB"):$("#vidA");
+  if(!w.currentSrc.endsWith(`sky/video/${vidCur}.mp4`)||w.readyState<3)return;   /* gemello non pronto: resta il loop nativo */
+  loopFading=true;
+  try{w.currentTime=0}catch(err){}
+  w.play().then(()=>{
+    w.classList.add("on"); v.classList.remove("on");
+    setTimeout(()=>{loopFading=false;if(!vidLoading&&!v.classList.contains("on")){v.pause();try{v.currentTime=0}catch(err){}}},1700);
+  }).catch(()=>{loopFading=false});
+}
+["#vidA","#vidB"].forEach(id=>$(id).addEventListener("timeupdate",softLoop));
 function setPhoto(scene){
   if(VIDEO_OK&&VIDEOS[scene]){showPhoto(scene);showVideo(scene)}        /* foto sotto come poster, video sopra */
   else{hideVideos();if(PHOTOS[scene])showPhoto(scene)}
