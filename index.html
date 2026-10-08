@@ -343,6 +343,79 @@ header{margin:8px 4px 34px;display:flex;align-items:flex-start;justify-content:s
 }
 #city:hover{background:rgba(120,120,128,.1)}
 #city:focus{background:rgba(120,120,128,.14);color:var(--txt)}
+
+/* ---------- sorgente meteo: Meteo (Open-Meteo) | meteo.it | iLMeteo ---------- */
+.wsrc{
+  position:relative;display:grid;grid-template-columns:repeat(3,auto);align-items:stretch;
+  padding:3px;border-radius:12px;background:var(--tile);flex:none;
+  transition:background-color .3s var(--ease);
+}
+.wsrc-ind{
+  position:absolute;top:3px;bottom:3px;left:3px;border-radius:9px;
+  background:var(--card-solid);box-shadow:0 1px 4px rgba(0,0,0,.14);
+  transition:transform .45s var(--spring),width .45s var(--spring),background-color .3s var(--ease);
+  will-change:transform,width;
+}
+.wsrc button{
+  position:relative;z-index:1;border:0;background:none;font-family:inherit;cursor:pointer;
+  font-size:12px;font-weight:500;letter-spacing:-.01em;color:var(--txt2);padding:5px 10px;border-radius:9px;
+  white-space:nowrap;transition:color .3s var(--ease),transform .25s var(--spring);
+}
+.wsrc button:active{transform:scale(.94)}
+.wsrc button[aria-selected="true"]{color:var(--txt);font-weight:600}
+html[data-scene][data-tab="weather"] .wsrc{background:rgba(120,120,128,.14)}
+#cardWeather .card-head{flex-wrap:wrap}
+.w-city{flex:1;min-width:0}
+@media(max-width:600px){
+  #cardWeather .card-head .w-city{flex:1 1 100%;order:0}
+  #cardWeather .card-head{row-gap:10px}
+  #cardWeather .card-head .wsrc{order:1}
+  #cardWeather .card-head #geoBtn{order:2;margin-left:auto}
+  .wsrc button{padding:5px 9px}
+}
+
+/* pannello sorgente esterna (iframe) */
+#cardWeather[data-src="app"] #wExt{display:none}
+#cardWeather:not([data-src="app"]) #wSkeleton,#cardWeather:not([data-src="app"]) #wBody,#cardWeather:not([data-src="app"]) #wErr{display:none!important}
+#wExt{display:flex;flex-direction:column;flex:1;min-height:0;animation:extIn .5s var(--ease) both}
+@keyframes extIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.ext-bar{display:flex;align-items:center;gap:12px;margin-bottom:14px;min-width:0}
+.ext-bar .ext-logo{
+  width:34px;height:34px;border-radius:10px;flex:none;display:grid;place-items:center;color:#fff;
+  font-size:11px;font-weight:800;letter-spacing:-.02em;box-shadow:0 2px 8px rgba(0,0,0,.14);
+}
+.ext-bar .ext-logo.meteoit{background:linear-gradient(135deg,#0A84FF,#0040C8)}
+.ext-bar .ext-logo.ilmeteo{background:linear-gradient(135deg,#FF9F0A,#E0302A)}
+.ext-bar .ext-txt{flex:1;min-width:0}
+.ext-bar .ext-title{font-size:15px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ext-bar .ext-sub{font-size:12px;color:var(--txt2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ext-open{
+  flex:none;display:inline-flex;align-items:center;gap:7px;border:0;cursor:pointer;font-family:inherit;
+  font-size:13px;font-weight:600;letter-spacing:-.01em;color:#fff;background:var(--accent);
+  padding:9px 14px;border-radius:12px;text-decoration:none;
+  box-shadow:0 4px 14px rgba(0,122,255,.3);
+  transition:transform .3s var(--spring),box-shadow .3s var(--ease),opacity .25s var(--ease);
+}
+.ext-open svg{width:14px;height:14px}
+@media(hover:hover){.ext-open:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(0,122,255,.38)}}
+.ext-open:active{transform:scale(.96)}
+.ext-open:disabled{opacity:.5;pointer-events:none}
+.ext-frame{
+  position:relative;flex:1;min-height:min(72vh,820px);border-radius:16px;overflow:hidden;
+  background:var(--tile);box-shadow:inset 0 0 0 1px var(--sep);
+}
+.ext-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;opacity:0;transition:opacity .6s var(--ease)}
+.ext-frame.ready iframe{opacity:1}
+.ext-load{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  color:var(--txt2);font-size:13px;transition:opacity .4s var(--ease);
+}
+.ext-frame.ready .ext-load{opacity:0;pointer-events:none}
+.ext-load .spin{width:26px;height:26px;border-radius:50%;border:2.5px solid var(--track);border-top-color:var(--accent);animation:extSpin .9s linear infinite}
+@keyframes extSpin{to{transform:rotate(360deg)}}
+.ext-hint{font-size:11px;color:var(--txt2);margin-top:10px;text-align:center;opacity:.8}
+.ext-hint a{color:var(--accent);text-decoration:none}
+@media(max-width:600px){.ext-bar .ext-sub{display:none}.ext-open span{display:none}.ext-open{padding:9px 11px}}
 /* ---------- cielo a tutta pagina ----------
    Elementi vettoriali (SVG) per sole, luna e nuvole; un canvas per pioggia,
    neve, stelle e fulmini. Il canvas gira a 30 fps solo con il tab Meteo attivo. */
@@ -963,12 +1036,36 @@ html[data-scene][data-tab="weather"] .hello,html[data-scene][data-tab="weather"]
   <div class="panels">
 
     <!-- ============ METEO ============ -->
-    <section class="card panel rise active" id="cardWeather" data-panel="weather">
+    <section class="card panel rise active" id="cardWeather" data-panel="weather" data-src="app">
       <div class="card-head">
-        <div style="flex:1;min-width:0">
+        <div class="w-city">
           <input id="city" value="Milano" spellcheck="false" autocomplete="off" aria-label="Città">
         </div>
+        <nav class="wsrc" id="wsrc" role="tablist" aria-label="Sorgente previsioni">
+          <div class="wsrc-ind" id="wsrcInd"></div>
+          <button role="tab" data-src="app" aria-selected="true">Meteo</button>
+          <button role="tab" data-src="meteoit" aria-selected="false">meteo.it</button>
+          <button role="tab" data-src="ilmeteo" aria-selected="false">iLMeteo</button>
+        </nav>
         <button class="card-action" id="geoBtn" title="Usa posizione attuale">Posizione</button>
+      </div>
+
+      <div id="wExt">
+        <div class="ext-bar">
+          <div class="ext-logo" id="extLogo">M</div>
+          <div class="ext-txt">
+            <div class="ext-title" id="extTitle">meteo.it</div>
+            <div class="ext-sub" id="extSub">Previsioni per —</div>
+          </div>
+          <a class="ext-open" id="extOpen" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>
+            <span>Apri nel sito</span>
+          </a>
+        </div>
+        <div class="ext-frame" id="extFrame">
+          <div class="ext-load" id="extLoad"><div class="spin"></div><span id="extLoadTxt">Carico le previsioni…</span></div>
+        </div>
+        <div class="ext-hint" id="extHint">Se l'anteprima non compare, usa <a href="#" id="extHintLink" target="_blank" rel="noopener">Apri nel sito</a>.</div>
       </div>
 
       <div id="wSkeleton">
@@ -1307,6 +1404,7 @@ async function loadWeather(force){
       cityState={...cityState,...g};
       $("#city").value=g.name;
       localStorage.setItem(CITY_KEY,JSON.stringify(cityState));
+      if(typeof WSrc!=="undefined")WSrc.cityChanged();
     }
     const u=`https://api.open-meteo.com/v1/forecast?latitude=${cityState.lat}&longitude=${cityState.lon}`
       +`&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m`
@@ -1643,11 +1741,111 @@ $("#geoBtn").addEventListener("click",()=>{
     cityState={name,lat,lon};
     cityInput.value=name;
     localStorage.setItem(CITY_KEY,JSON.stringify(cityState));
+    if(typeof WSrc!=="undefined")WSrc.cityChanged();
     if(window.Sync)Sync.touch("city");
     loadWeather(false);
   },()=>{ $("#wSkeleton").classList.add("hidden"); showErr($("#wErr"),"Posizione non disponibile",()=>loadWeather(false)); });
 });
 loadWeather(cityState.lat==null);
+
+/* ================= SORGENTE METEO (meteo.it / iLMeteo) =================
+   Segmented control nella card: "Meteo" è la vista Open-Meteo; le altre due
+   mostrano il sito esterno in un iframe sandbox (che impedisce al sito di
+   "scappare" dal frame) già aperto sulla città scelta, con il bottone per
+   aprirlo in una nuova scheda. meteo.it usa un id località (ISTAT) che
+   recuperiamo dalla sua API di ricerca; iLMeteo accetta il nome in slug. */
+const WSrc=(()=>{
+  const KEY="dash.wsrc", SRCS=["app","meteoit","ilmeteo"];
+  const card=$("#cardWeather"), nav=$("#wsrc"), ind=$("#wsrcInd"), btns=$$("#wsrc button");
+  const frame=$("#extFrame"), openA=$("#extOpen"), hintA=$("#extHintLink");
+  const META={
+    meteoit:{title:"meteo.it",logo:"M",cls:"meteoit",home:"https://www.meteo.it/"},
+    ilmeteo:{title:"iLMeteo",logo:"iL",cls:"ilmeteo",home:"https://www.ilmeteo.it/"}
+  };
+  let cur="app", iframe=null, curUrl="", loadT=null, seq=0;
+  try{const s=localStorage.getItem(KEY);if(SRCS.includes(s))cur=s}catch(_){}
+
+  const slug=n=>String(n||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+
+  async function meteoItUrl(){
+    const name=cityState.name; if(!name)return META.meteoit.home;
+    if(cityState.mt&&cityState.mt.q===name.toLowerCase())return cityState.mt.url;
+    try{
+      const r=await fetch(`https://api.meteosuper.it/v1/locations?name=${encodeURIComponent(name)}`);
+      if(!r.ok)throw 0;
+      const j=await r.json();
+      const it=(Array.isArray(j)?j:[]).find(x=>x.nation==="Italia")||(Array.isArray(j)?j[0]:null);
+      if(!it||!it.idLocation)throw 0;
+      const url=`https://www.meteo.it/meteo/${slug(it.name)}-${String(it.idLocation).replace(/^0+/,"")}`;
+      cityState.mt={q:name.toLowerCase(),url};
+      try{localStorage.setItem(CITY_KEY,JSON.stringify(cityState))}catch(_){}
+      return url;
+    }catch(_){return META.meteoit.home}
+  }
+  async function urlFor(src){
+    if(src==="ilmeteo")return cityState.name?`https://www.ilmeteo.it/meteo/${slug(cityState.name)}`:META.ilmeteo.home;
+    if(src==="meteoit")return meteoItUrl();
+    return "";
+  }
+
+  function moveInd(animate){
+    const b=btns.find(x=>x.dataset.src===cur); if(!b)return;
+    if(!animate)ind.style.transition="none";
+    ind.style.width=b.offsetWidth+"px";
+    ind.style.transform=`translateX(${b.offsetLeft-3}px)`;
+    if(!animate){void ind.offsetWidth;ind.style.transition=""}
+  }
+
+  function destroyFrame(){
+    if(iframe){iframe.remove();iframe=null}
+    curUrl="";frame.classList.remove("ready");clearTimeout(loadT);
+  }
+
+  async function renderExt(){
+    const src=cur, m=META[src]; if(!m)return;
+    const my=++seq;
+    $("#extLogo").textContent=m.logo;$("#extLogo").className="ext-logo "+m.cls;
+    $("#extTitle").textContent=m.title;
+    $("#extSub").textContent=cityState.name?`Previsioni per ${cityState.name}`:"Previsioni";
+    $("#extLoadTxt").textContent=`Carico ${m.title}…`;
+    openA.href=hintA.href=m.home;
+    const url=await urlFor(src);
+    if(my!==seq)return;
+    openA.href=hintA.href=url;
+    if(url===curUrl&&iframe)return;
+    destroyFrame();
+    curUrl=url;
+    iframe=document.createElement("iframe");
+    iframe.title=`${m.title} — ${cityState.name||""}`;
+    iframe.loading="lazy";
+    iframe.referrerPolicy="no-referrer";
+    iframe.setAttribute("sandbox","allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox");
+    iframe.addEventListener("load",()=>{clearTimeout(loadT);frame.classList.add("ready")});
+    iframe.src=url;
+    frame.appendChild(iframe);
+    loadT=setTimeout(()=>frame.classList.add("ready"),2500);
+  }
+
+  function select(src,animate){
+    if(!SRCS.includes(src))src="app";
+    cur=src;
+    try{localStorage.setItem(KEY,src)}catch(_){}
+    btns.forEach(b=>b.setAttribute("aria-selected",String(b.dataset.src===src)));
+    moveInd(animate);
+    card.dataset.src=src;
+    if(src==="app")destroyFrame(); else renderExt();
+  }
+
+  nav.addEventListener("click",e=>{const b=e.target.closest("button[data-src]");if(b)select(b.dataset.src,true)});
+  addEventListener("resize",()=>moveInd(false));
+  // all'avvio: nessuna animazione, indicatore posizionato quando il layout è pronto
+  requestAnimationFrame(()=>select(cur,false));
+
+  return {
+    cityChanged(){ delete cityState.mt; if(cur!=="app")renderExt(); },
+    get current(){return cur}
+  };
+})();
 
 /* ================= TASK ================= */
 const T_KEY="dash.tasks";
@@ -2112,7 +2310,7 @@ window.Sync=(()=>{
     if(remote.city&&(rm.city||0)>(meta.city||0)){cityState=remote.city;localStorage.setItem(CITY_KEY,JSON.stringify(cityState));$("#city").value=cityState.name;meta.city=rm.city;changed.push("city")}
     if(remote.tasks&&(rm.tasks||0)>(meta.tasks||0)){tasks=remote.tasks;localStorage.setItem(T_KEY,JSON.stringify(tasks));meta.tasks=rm.tasks;changed.push("tasks")}
     if(remote.reminders&&(rm.reminders||0)>(meta.reminders||0)){rems=remote.reminders;localStorage.setItem(R_KEY,JSON.stringify(rems));meta.reminders=rm.reminders;changed.push("reminders")}
-    if(changed.length){saveMeta();if(changed.includes("tasks"))renderTasks();if(changed.includes("reminders")){renderRems();renderCal()}if(changed.includes("city"))loadWeather(false)}
+    if(changed.length){saveMeta();if(changed.includes("tasks"))renderTasks();if(changed.includes("reminders")){renderRems();renderCal()}if(changed.includes("city")){loadWeather(false);if(typeof WSrc!=="undefined")WSrc.cityChanged();}}
     /* c'è qualcosa di locale più nuovo del remoto? allora va spinto */
     return ["city","tasks","reminders"].some(k=>(meta[k]||0)>(rm[k]||0));
   }
