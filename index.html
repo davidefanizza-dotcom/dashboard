@@ -991,6 +991,10 @@ html[data-scene][data-tab="weather"] .hello,html[data-scene][data-tab="weather"]
             <span id="syncState">Non collegato</span>
             <span><button type="button" class="card-action" id="syncNow">Sincronizza ora</button> <button type="button" class="card-action sync-off" id="syncOff">Scollega</button></span>
           </div>
+          <div class="sync-foot">
+            <span>Backup impostazioni</span>
+            <span><button type="button" class="card-action" id="bkExp">Esporta</button> <button type="button" class="card-action" id="bkImp">Importa</button></span>
+          </div>
         </div>
       </div>
       <button class="switch" id="themeSwitch" role="switch" aria-checked="false" aria-label="Tema scuro">
@@ -2382,6 +2386,9 @@ window.Sync=(()=>{
   $("#syncForm").addEventListener("submit",e=>{e.preventDefault();connect($("#syncTok").value);$("#syncTok").value=""});
   $("#syncNow").addEventListener("click",()=>sync());
   $("#syncOff").addEventListener("click",()=>disconnect());
+  {const keep=k=>k&&k.startsWith("dash.");
+   $("#bkExp").addEventListener("click",()=>BACKUP.save("dashboard-backup.json",{app:"dashboard",v:1,data:BACKUP.dump(keep)}));
+   $("#bkImp").addEventListener("click",async()=>{try{const j=await BACKUP.pick();if(j.app!=="dashboard")throw 0;BACKUP.restore(j.data,keep);location.reload()}catch(e){alert("File di backup non valido")}});}
   setStatus(token?"ok":"off");
   if(token)sync();
   setInterval(()=>{if(token&&!document.hidden)sync()},60*1000);
@@ -2489,6 +2496,26 @@ const SkyFX=(()=>{
 /* refresh periodico */
 setInterval(()=>loadWeather(false),15*60*1000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)loadWeather(false)});
+
+/* ---------- Backup impostazioni (esporta/importa) ---------- */
+const BACKUP = {
+  async save(name, data){
+    const txt = JSON.stringify(data, null, 2);
+    const file = new File([txt], name, { type: "application/json" });
+    try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return true; } } catch (e) { if (e && e.name === "AbortError") return false; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    return true;
+  },
+  pick(){
+    return new Promise((res, rej) => {
+      const i = document.createElement("input"); i.type = "file"; i.accept = "application/json,.json";
+      i.onchange = async () => { try { res(JSON.parse(await i.files[0].text())); } catch (e) { rej(e); } };
+      i.click();
+    });
+  },
+  dump(keep){ const o = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (keep(k)) o[k] = localStorage.getItem(k); } return o; },
+  restore(o, keep){ let n = 0; for (const [k, v] of Object.entries(o || {})) if (keep(k) && typeof v === "string") { localStorage.setItem(k, v); n++; } return n; }
+};
 </script>
 </body>
 </html>
